@@ -93,17 +93,17 @@
       <div class="hero-head">
         <h1>Daily Health, Simply.</h1>
         <div class="row">
-          <span id="userBox" class="btn light">사용자: <span id="userLabel">guest</span></span>
-          <button id="btnSetUser" class="btn light">사용자 변경</button>
+          <span id="userBox" class="btn light">사용자 : <span id="userLabel">guest</span></span>
+          <button id="btnSetUser" class="btn light">사용자명 변경</button>
         </div>
       </div>
       <div class="hero-body">
         <div class="card">
-          <p class="muted">원하는 기능으로 이동하세요.</p>
+          <p class="muted">오늘은 어떤 하루를 보내고 계신가요?</p>
           <div class="nav">
-            <button class="btn primary" data-nav="diary">개인 다이어리</button>
-            <button class="btn primary" data-nav="menu">오늘의 식단</button>
-            <button class="btn primary" data-nav="keeper">건강지킴이(알림)</button>
+            <button class="btn primary" data-nav="diary">Daily Diart</button>
+            <button class="btn primary" data-nav="menu">Daily Menu</button>
+            <button class="btn primary" data-nav="keeper">Alarm</button>
           </div>
         </div>
         <div class="card">
@@ -117,7 +117,7 @@
     <section id="page-diary" class="hidden">
       <div class="pagehead">
         <div class="band">
-          <h1>개인 다이어리</h1>
+          <h1>Daily Diary</h1>
           <p>YYYYMMDD로 날짜를 입력하고 기록하세요.</p>
         </div>
         <div class="pagebody container">
@@ -126,7 +126,7 @@
               <div style="flex:1"><label>제목</label><input id="dTitle" placeholder="제목" /></div>
               <div style="width:220px"><label>날짜(YYYYMMDD)</label><input id="dDate" inputmode="numeric" maxlength="8" placeholder="예: 20250826" /></div>
             </div>
-            <div style="margin-top:8px"><label>내용</label><textarea id="dBody" placeholder="하루를 기록해 보세요"></textarea></div>
+            <div style="margin-top:8px"><label>내용</label><textarea id="dBody" placeholder="사용자님의 하루를 남겨주세요 :)"></textarea></div>
             <div class="row" style="margin-top:8px">
               <button id="btnSaveDiary" class="btn primary">저장</button>
               <button id="btnClearDiary" class="btn light">입력 지우기</button>
@@ -134,7 +134,7 @@
           </article>
 
           <article class="card">
-            <h2 style="margin:0 0 10px">내 기록 목록</h2>
+            <h2 style="margin:0 0 10px">나의 기억 톺아보기</h2>
             <div id="diaryList" class="grid"></div>
           </article>
         </div>
@@ -145,23 +145,23 @@
     <section id="page-menu" class="hidden">
       <div class="pagehead">
         <div class="band">
-          <h1>오늘의 식단</h1>
-          <p>프리셋(하드코딩)으로 빠르게 채우고 저장하세요.</p>
+          <h1>Daily Menu</h1>
+          <p>프리셋으로 식단을 업데이트 해보세요!</p>
         </div>
         <div class="pagebody container">
           <article class="card">
             <div class="row">
               <div style="width:220px"><label>날짜</label><input id="mDate" type="date" /></div>
               <div style="width:260px">
-                <label>샘플 프리셋</label>
+                <label>프리셋 옵션</label>
                 <select id="presetSelect">
-                  <option value="weekday">평일(라이트)</option>
+                  <option value="weekday">오늘의 구식</option>
                   <option value="protein">단백질 강화</option>
                   <option value="korean">한식 밸런스</option>
                   <option value="lowcarb">저탄 균형</option>
                 </select>
               </div>
-              <button id="btnPreset" class="btn primary" style="align-self:end">식단 불러오기</button>
+              <button id="btnPreset" class="btn primary" style="align-self:end">식단 업데이트</button>
             </div>
 
             <div class="row" style="margin-top:8px">
@@ -188,14 +188,14 @@
     <section id="page-keeper" class="hidden">
       <div class="pagehead">
         <div class="band">
-          <h1>건강지킴이 — 알림</h1>
+          <h1>건강지킴 알리미</h1>
           <p>눈 휴식과 스트레칭 알림 주기를 설정하세요.</p>
         </div>
         <div class="pagebody container">
           <article class="card">
             <div class="row">
-              <div style="width:220px"><label>눈 휴식(분)</label><input id="eyeMins" type="number" min="1" step="1" value="20" /></div>
-              <div style="width:220px"><label>스트레칭(분)</label><input id="stretchMins" type="number" min="1" step="1" value="60" /></div>
+              <div style="width:220px"><label>잠시 먼곳을 바라보며 눈을 위한 휴식을 가져볼까요?</label><input id="eyeMins" type="number" min="1" step="1" value="20" /></div>
+              <div style="width:220px"><label>스트레칭을 하는 시간을 잠시 가져보아요!</label><input id="stretchMins" type="number" min="1" step="1" value="60" /></div>
               <div style="width:260px">
                 <label>알림 지속</label>
                 <select id="requireInteraction">
