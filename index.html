@@ -5,65 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>건강지킴이</title>
 
-  <!-- 폰트: Pretendard CDN (원하면 로컬 폰트로 교체 가능) -->
+  <!-- 깔끔 폰트 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"/>
 
   <style>
     :root{
-      --sky:#2ea2ff;
-      --sky-600:#1d8be8;
-      --bg:#f6f9ff;
-      --ink:#0f172a;
-      --muted:#6b7280;
-      --card:#fff;
-      --ring:#d0e7ff;
-      --shadow:0 16px 40px rgba(46,162,255,.16);
-      --r:18px;
+      --sky:#2ea2ff; --sky-600:#1d8be8; --bg:#f6f9ff; --ink:#0f172a; --muted:#6b7280;
+      --card:#fff; --ring:#d0e7ff; --shadow:0 16px 40px rgba(46,162,255,.16); --r:18px;
     }
-    *{box-sizing:border-box}
-    html,body{height:100%}
+    *{box-sizing:border-box} html,body{height:100%}
     body{margin:0;font-family:Pretendard,system-ui,"Segoe UI",Roboto,"Noto Sans KR",sans-serif;background:var(--bg);color:var(--ink)}
 
-    /* Top App Bar */
-    .appbar{
-      position:sticky; top:0; z-index:50;
-      background:linear-gradient(180deg,var(--sky),#5fc0ff);
-      color:#fff; box-shadow:0 4px 14px rgba(0,0,0,.12);
-    }
+    /* App bar */
+    .appbar{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,var(--sky),#5fc0ff);color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.12)}
     .bar{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:14px 16px}
     .brand{display:flex;align-items:center;gap:10px;font-weight:900}
     .logo{width:30px;height:30px;border-radius:8px;background:#fff;color:var(--sky-600);display:grid;place-items:center}
     .spacer{flex:1}
     .btn{appearance:none;border:0;border-radius:12px;padding:10px 14px;cursor:pointer;font-weight:700}
-    .btn.primary{background:#fff;color:var(--sky-600)}
     .btn.ghost{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.28)}
     .pill{border-radius:999px;padding:8px 12px;background:rgba(255,255,255,.18)}
 
-    /* Page shell */
+    /* Shell */
     .wrap{max-width:1100px;margin:22px auto;padding:0 16px}
-    .hero{
-      background:var(--card); border-radius:22px; box-shadow:var(--shadow); overflow:hidden;
-    }
+    .card{background:var(--card); border-radius:var(--r); box-shadow:var(--shadow); padding:18px}
+    .muted{color:var(--muted)} .row{display:flex;gap:10px;flex-wrap:wrap}
+
+    /* HOME hero */
+    .hero{background:var(--card); border-radius:22px; box-shadow:var(--shadow); overflow:hidden}
     .hero-head{background:linear-gradient(180deg,var(--sky),#70c9ff); color:#fff; padding:36px 24px}
     .hero-head h1{margin:0 0 8px;font-size:28px}
     .hero-body{padding:20px 24px;display:grid;gap:16px}
-    .row{display:flex;gap:10px;flex-wrap:wrap}
-    .card{background:var(--card); border-radius:var(--r); box-shadow:var(--shadow); padding:18px}
-    .muted{color:var(--muted)}
     .nav{display:flex;gap:10px;flex-wrap:wrap}
+    .btn.primary{background:#fff;color:var(--sky-600)}
 
-    /* Tabs (pages) */
-    .hidden{display:none}
+    /* PAGE header (세부페이지 상단 띠) */
+    .pagehead{background:var(--card);border-radius:22px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px}
+    .pagehead .band{background:linear-gradient(90deg,#e8f4ff,#f8fbff);padding:22px 20px;border-bottom:1px solid #e9f1fb}
+    .pagehead h1{margin:0;font-size:22px}
+    .pagehead p{margin:6px 0 0;color:#5a6b84}
+    .pagebody{padding:16px}
+
+    /* Forms */
     .container{display:grid;gap:16px}
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-
     input,textarea,select{font:inherit;padding:12px;border:1px solid #e6edf6;border-radius:12px;background:#fbfdff;width:100%}
     textarea{min-height:120px;resize:vertical}
-
     .entry{border:1px solid #eef2ff;border-radius:14px;padding:12px;background:#fff}
     .entry h3{margin:0 0 8px;font-size:16px}
     .entry p{margin:0;white-space:pre-wrap;color:#475569}
 
+    .hidden{display:none}
     footer{margin:24px 0;color:#8aa0ba;text-align:center}
     .hint{font-size:13px}
   </style>
@@ -74,10 +66,9 @@
     <div class="bar">
       <div class="brand"><div class="logo">H</div>건강지킴이</div>
       <div class="spacer"></div>
-      <!-- 전역 알림 권한 버튼: 항상 보이도록 고정 -->
+      <!-- 전역 알림 권한(고정) -->
       <span id="notifState" class="pill">알림: 확인필요</span>
       <button id="btnAskPerm" class="btn ghost" title="브라우저 알림 권한 요청">알림 권한</button>
-      <button id="btnGoHome" class="btn primary" data-nav="home">홈</button>
     </div>
   </header>
 
@@ -93,7 +84,7 @@
       </div>
       <div class="hero-body">
         <div class="card">
-          <p class="muted">아래에서 바로 이동하세요.</p>
+          <p class="muted">원하는 기능으로 이동하세요.</p>
           <div class="nav">
             <button class="btn primary" data-nav="diary">개인 다이어리</button>
             <button class="btn primary" data-nav="menu">오늘의 식단</button>
@@ -102,107 +93,121 @@
         </div>
         <div class="card">
           <b>Tip</b>
-          <p class="hint">알림은 브라우저가 열려 있을 때만 동작합니다(GitHub Pages 기준). Windows/Chrome/Edge는 알림센터(토스트)로 표시됩니다.</p>
+          <p class="hint">알림은 브라우저가 열려 있을 때 동작합니다(GitHub Pages). Windows/Chrome/Edge는 알림센터(토스트)로 표시돼요.</p>
         </div>
       </div>
     </section>
 
     <!-- DIARY -->
-    <section id="page-diary" class="container hidden">
-      <div class="row">
-        <button class="btn ghost" data-nav="home">← 홈으로</button>
+    <section id="page-diary" class="hidden">
+      <div class="pagehead">
+        <div class="band">
+          <h1>Personal Diary</h1>
+          <p>오늘을 기록하고, 아래 목록에서 확인하세요.</p>
+        </div>
+        <div class="pagebody container">
+          <article class="card">
+            <div class="row">
+              <div style="flex:1"><label>제목</label><input id="dTitle" placeholder="제목"/></div>
+              <div style="width:220px"><label>날짜</label><input id="dDate" type="date"/></div>
+            </div>
+            <div style="margin-top:8px"><label>내용</label><textarea id="dBody" placeholder="하루를 기록해 보세요"></textarea></div>
+            <div class="row" style="margin-top:8px">
+              <button id="btnSaveDiary" class="btn primary">저장</button>
+              <button id="btnClearDiary" class="btn ghost">입력 지우기</button>
+              <button class="btn ghost" data-nav="home">← 홈</button>
+            </div>
+          </article>
+          <article class="card">
+            <h2 style="margin:0 0 10px">내 기록 목록</h2>
+            <div id="diaryList" class="grid"></div>
+          </article>
+        </div>
       </div>
-      <article class="card">
-        <h2>오늘의 기록</h2>
-        <div class="row">
-          <div style="flex:1"><label>제목</label><input id="dTitle" placeholder="제목"/></div>
-          <div style="width:220px"><label>날짜</label><input id="dDate" type="date"/></div>
-        </div>
-        <div><label>내용</label><textarea id="dBody" placeholder="하루를 기록해 보세요"></textarea></div>
-        <div class="row">
-          <button id="btnSaveDiary" class="btn primary">저장</button>
-          <button id="btnClearDiary" class="btn ghost">입력 지우기</button>
-        </div>
-      </article>
-      <article class="card">
-        <h2>내 기록 목록</h2>
-        <div id="diaryList" class="grid"></div>
-      </article>
     </section>
 
     <!-- MENU -->
-    <section id="page-menu" class="container hidden">
-      <div class="row">
-        <button class="btn ghost" data-nav="home">← 홈으로</button>
+    <section id="page-menu" class="hidden">
+      <div class="pagehead">
+        <div class="band">
+          <h1>Today's Menu</h1>
+          <p>저장 메뉴로 빠르게 채우고 저장하세요.</p>
+        </div>
+        <div class="pagebody container">
+          <article class="card">
+            <div class="row">
+              <div style="width:220px"><label>날짜</label><input id="mDate" type="date"/></div>
+              <div style="width:260px">
+                <label>샘플 프리셋</label>
+                <select id="presetSelect">
+                  <option value="weekday">평일(라이트)</option>
+                  <option value="protein">단백질 강화</option>
+                  <option value="korean">한식 밸런스</option>
+                  <option value="lowcarb">저탄 균형</option>
+                </select>
+              </div>
+              <button id="btnPreset" class="btn ghost" style="align-self:end">샘플 불러오기</button>
+            </div>
+            <div class="row" style="margin-top:8px">
+              <div style="flex:1"><label>아침</label><input id="mBreakfast" placeholder="예: 오트밀+우유"/></div>
+              <div style="flex:1"><label>점심</label><input id="mLunch" placeholder="예: 닭가슴살 샐러드"/></div>
+              <div style="flex:1"><label>저녁</label><input id="mDinner" placeholder="예: 구운 연어, 채소"/></div>
+            </div>
+            <div class="row" style="margin-top:8px">
+              <button id="btnSaveMenu" class="btn primary">저장</button>
+              <button id="btnTodayFill" class="btn ghost">오늘 날짜로</button>
+              <button class="btn ghost" data-nav="home">← 홈</button>
+            </div>
+          </article>
+          <article class="card">
+            <h2 style="margin:0 0 10px">나의 식단 기록</h2>
+            <div id="menuList" class="grid"></div>
+          </article>
+        </div>
       </div>
-      <article class="card">
-        <h2>오늘의 식단</h2>
-        <p class="muted">* “샘플 불러오기”로 **하드코딩 프리셋**을 채워둘 수 있어요.</p>
-        <div class="row">
-          <div style="width:220px"><label>날짜</label><input id="mDate" type="date"/></div>
-          <div style="width:260px">
-            <label>샘플 프리셋</label>
-            <select id="presetSelect">
-              <option value="weekday">평일(라이트)</option>
-              <option value="protein">단백질 강화</option>
-              <option value="korean">한식 밸런스</option>
-              <option value="lowcarb">저탄 균형</option>
-            </select>
-          </div>
-          <button id="btnPreset" class="btn ghost" style="align-self:end">샘플 불러오기</button>
-        </div>
-        <div class="row">
-          <div style="flex:1"><label>아침</label><input id="mBreakfast" placeholder="예: 오트밀+우유"/></div>
-          <div style="flex:1"><label>점심</label><input id="mLunch" placeholder="예: 닭가슴살 샐러드"/></div>
-          <div style="flex:1"><label>저녁</label><input id="mDinner" placeholder="예: 구운 연어, 채소"/></div>
-        </div>
-        <div class="row">
-          <button id="btnSaveMenu" class="btn primary">저장</button>
-          <button id="btnTodayFill" class="btn ghost">오늘 날짜로</button>
-        </div>
-      </article>
-      <article class="card">
-        <h2>나의 식단 기록</h2>
-        <div id="menuList" class="grid"></div>
-      </article>
     </section>
 
     <!-- KEEPER -->
-    <section id="page-keeper" class="container hidden">
-      <div class="row">
-        <button class="btn ghost" data-nav="home">← 홈으로</button>
-        <!-- 이 화면에도 권한 버튼 중복 제공 -->
-        <span id="notifState2" class="pill">알림: 확인필요</span>
-        <button id="btnAskPerm2" class="btn ghost">알림 권한</button>
+    <section id="page-keeper" class="hidden">
+      <div class="pagehead">
+        <div class="band">
+          <h1>건강지킴 알리미미</h1>
+          <p>눈 휴식과 스트레칭 알림 주기를 설정하세요.</p>
+        </div>
+        <div class="pagebody container">
+          <article class="card">
+            <div class="row">
+              <div style="width:220px"><label>눈 휴식(분)</label><input id="eyeMins" type="number" min="1" step="1" value="20"/></div>
+              <div style="width:220px"><label>스트레칭(분)</label><input id="stretchMins" type="number" min="1" step="1" value="60"/></div>
+              <div style="width:260px">
+                <label>알림 지속</label>
+                <select id="requireInteraction">
+                  <option value="1">사용자가 닫을 때까지</option>
+                  <option value="0">자동으로 사라짐</option>
+                </select>
+              </div>
+            </div>
+            <div class="row" style="margin-top:8px">
+              <button id="btnStart" class="btn primary">알림 시작</button>
+              <button id="btnStop" class="btn ghost">중지</button>
+              <button id="btnTest" class="btn ghost">테스트 알림</button>
+              <button class="btn ghost" data-nav="home">← 홈</button>
+            </div>
+            <div class="row" style="margin-top:8px">
+              <span id="ticker" class="pill" style="background:#eef7ff;color:#0b62c7">대기 중…</span>
+              <span class="muted" id="keeperStateHint">알림 권한 상태는 상단 바에서 확인/변경할 수 있어요.</span>
+            </div>
+          </article>
+          <article class="card">
+            <h2 style="margin:0 0 10px">로그</h2>
+            <pre id="log" class="entry"></pre>
+          </article>
+        </div>
       </div>
-      <article class="card">
-        <h2>건강지킴이 — 알림 설정</h2>
-        <div class="row">
-          <div style="width:220px"><label>눈 휴식(분)</label><input id="eyeMins" type="number" min="1" step="1" value="20"/></div>
-          <div style="width:220px"><label>스트레칭(분)</label><input id="stretchMins" type="number" min="1" step="1" value="60"/></div>
-          <div style="width:260px">
-            <label>알림 지속</label>
-            <select id="requireInteraction">
-              <option value="1">사용자가 닫을 때까지</option>
-              <option value="0">자동으로 사라짐</option>
-            </select>
-          </div>
-        </div>
-        <div class="row">
-          <button id="btnStart" class="btn primary">알림 시작</button>
-          <button id="btnStop" class="btn ghost">중지</button>
-          <button id="btnTest" class="btn ghost">테스트 알림</button>
-        </div>
-        <div class="row"><span id="ticker" class="pill" style="background:#eef7ff;color:#0b62c7">대기 중…</span></div>
-      </article>
-      <article class="card">
-        <h2>로그</h2>
-        <pre id="log" class="entry"></pre>
-      </article>
     </section>
 
     <div id="toast" class="pill" style="position:fixed;right:16px;bottom:16px;display:none;background:#0f172a;color:#fff">알림 권한이 꺼져 있어요. 상단 버튼으로 허용해 주세요.</div>
-    <footer>© 건강지킴이 • GitHub Pages</footer>
+    <footer>© 건강지킴이 레오레오 • GitHub Pages</footer>
   </main>
 
   <script src="./app.js" defer></script>
