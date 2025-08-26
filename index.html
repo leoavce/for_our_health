@@ -4,8 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>건강지킴이</title>
-
-  <!-- 폰트 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"/>
 
   <style>
@@ -22,9 +20,10 @@
     .brand{display:flex;align-items:center;gap:10px;font-weight:900}
     .logo{width:30px;height:30px;border-radius:8px;background:#fff;color:var(--sky-600);display:grid;place-items:center}
     .spacer{flex:1}
-    .btn{appearance:none;border:0;border-radius:12px;padding:10px 14px;cursor:pointer;font-weight:700}
+    .btn{appearance:none;border:0;border-radius:12px;padding:10px 14px;cursor:pointer;font-weight:700;line-height:1}
     .btn.ghost{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.28)}
     .btn.light{background:#fff;color:var(--sky-600)}
+    .btn.primary{background:#fff;color:var(--sky-600);box-shadow:0 0 0 2px rgba(255,255,255,.6) inset}
     .pill{border-radius:999px;padding:8px 12px;background:rgba(255,255,255,.18)}
 
     /* Shell */
@@ -52,12 +51,12 @@
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
     input,textarea,select{font:inherit;padding:12px;border:1px solid #e6edf6;border-radius:12px;background:#fbfdff;width:100%}
     textarea{min-height:120px;resize:vertical}
-    .entry{border:1px solid #eef2ff;border-radius:14px;padding:12px;background:#fff;position:relative}
+    .entry{border:1px solid #eef2ff;border-radius:14px;padding:12px;background:#fff;position:relative;overflow:visible} /* overflow visible */
     .entry h3{margin:0 0 8px;font-size:16px}
     .entry p{margin:0;white-space:pre-wrap;color:#475569}
     .gear{position:absolute;top:10px;right:10px;background:transparent;border:0;cursor:pointer;padding:6px}
     .gear svg{width:18px;height:18px}
-    .dropdown{position:absolute;top:32px;right:10px;background:#fff;border:1px solid #e6edf6;border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,.12);display:none}
+    .dropdown{position:absolute;top:32px;right:10px;background:#fff;border:1px solid #e6edf6;border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,.18);display:none;z-index:1000}
     .dropdown button{display:block;width:120px;text-align:left;background:none;border:0;padding:10px 12px;cursor:pointer}
     .dropdown button:hover{background:#f3f7ff}
 
@@ -78,30 +77,30 @@
     <div class="bar">
       <div class="brand"><div class="logo">H</div>건강지킴이</div>
       <div class="spacer"></div>
-      <!-- 항상 보이는: 알림 권한 + HOME -->
-      <span id="notifState" class="pill">알림: 확인필요</span>
-      <button id="btnAskPerm" class="btn ghost" title="브라우저 알림 권한 요청">알림 권한</button>
+      <!-- 통일된 버튼/박스 디자인 -->
+      <span id="notifState" class="btn light">알림: 확인필요</span>
+      <button id="btnAskPerm" class="btn light" title="브라우저 알림 권한 요청">알림 권한</button>
       <button class="btn light" data-nav="home">HOME</button>
     </div>
   </header>
 
   <main class="wrap">
-    <!-- ======================== HOME ======================== -->
+    <!-- HOME -->
     <section id="page-home" class="hero">
       <div class="hero-head">
         <h1>Daily Health, Simply.</h1>
         <div class="row">
-          <span class="pill">사용자: <b id="userLabel">guest</b></span>
-          <button id="btnSetUser" class="btn ghost">사용자 변경</button>
+          <span id="userLabelBox" class="btn light">사용자: <b id="userLabel">guest</b></span>
+          <button id="btnSetUser" class="btn light">사용자명명 변경</button>
         </div>
       </div>
       <div class="hero-body">
         <div class="card">
           <p class="muted">원하는 기능으로 이동하세요.</p>
           <div class="nav">
-            <button class="btn primary" data-nav="diary">개인 다이어리</button>
-            <button class="btn primary" data-nav="menu">오늘의 식단</button>
-            <button class="btn primary" data-nav="keeper">건강지킴이(알림)</button>
+            <button class="btn primary" data-nav="diary">Daily Diary</button>
+            <button class="btn primary" data-nav="menu">Daily Menu</button>
+            <button class="btn primary" data-nav="keeper">건강지킴 알리미</button>
           </div>
         </div>
         <div class="card">
@@ -111,11 +110,11 @@
       </div>
     </section>
 
-    <!-- ======================== DIARY ======================== -->
+    <!-- DIARY -->
     <section id="page-diary" class="hidden">
       <div class="pagehead">
         <div class="band">
-          <h1>개인 다이어리</h1>
+          <h1>Daily Diary</h1>
           <p>YYYYMMDD로 날짜를 입력하고 기록하세요.</p>
         </div>
         <div class="pagebody container">
@@ -124,11 +123,11 @@
               <div style="flex:1"><label>제목</label><input id="dTitle" placeholder="제목" /></div>
               <div style="width:220px"><label>날짜(YYYYMMDD)</label><input id="dDate" inputmode="numeric" maxlength="8" placeholder="예: 20250826" /></div>
             </div>
-            <div style="margin-top:8px"><label>내용</label><textarea id="dBody" placeholder="하루를 기록해 보세요"></textarea></div>
+            <div style="margin-top:8px"><label>내용</label><textarea id="dBody" placeholder="오늘 하루의 기록을 남겨보세요 :)"></textarea></div>
             <div class="row" style="margin-top:8px">
               <button id="btnSaveDiary" class="btn primary">저장</button>
-              <button id="btnClearDiary" class="btn ghost">입력 지우기</button>
-              <button class="btn ghost" data-nav="home">← 홈</button>
+              <button id="btnClearDiary" class="btn light">입력 지우기</button>
+              <button class="btn light" data-nav="home">← 홈</button>
             </div>
           </article>
 
@@ -140,27 +139,28 @@
       </div>
     </section>
 
-    <!-- ======================== MENU ======================== -->
+    <!-- MENU -->
     <section id="page-menu" class="hidden">
       <div class="pagehead">
         <div class="band">
-          <h1>오늘의 식단</h1>
-          <p>프리셋(하드코딩)으로 빠르게 채우고 저장하세요.</p>
+          <h1>Daily Menu</h1>
+          <p>업데이트 버튼으로 오늘의 식단을 업데이트 해보세요!</p>
         </div>
         <div class="pagebody container">
           <article class="card">
             <div class="row">
               <div style="width:220px"><label>날짜</label><input id="mDate" type="date" /></div>
               <div style="width:260px">
-                <label>샘플 프리셋</label>
+                <label>업데이트 메뉴</label>
                 <select id="presetSelect">
-                  <option value="weekday">평일(라이트)</option>
+                  <option value="weekday">평일(구내식당)</option>
                   <option value="protein">단백질 강화</option>
                   <option value="korean">한식 밸런스</option>
                   <option value="lowcarb">저탄 균형</option>
                 </select>
               </div>
-              <button id="btnPreset" class="btn ghost" style="align-self:end">샘플 불러오기</button>
+              <!-- ★ 색상 잘 보이도록 primary 스타일 + 텍스트 변경 -->
+              <button id="btnPreset" class="btn primary" style="align-self:end">식단 업데이트트</button>
             </div>
 
             <div class="row" style="margin-top:8px">
@@ -171,8 +171,8 @@
 
             <div class="row" style="margin-top:8px">
               <button id="btnSaveMenu" class="btn primary">저장</button>
-              <button id="btnTodayFill" class="btn ghost">오늘 날짜로</button>
-              <button class="btn ghost" data-nav="home">← 홈</button>
+              <button id="btnTodayFill" class="btn light">오늘 날짜로</button>
+              <button class="btn light" data-nav="home">← 홈</button>
             </div>
           </article>
 
@@ -182,13 +182,13 @@
           </article>
         </div>
       </div>
-    </section> <!-- ★ 메뉴 섹션 정확히 닫힘 -->
+    </section>
 
-    <!-- ======================== KEEPER ======================== -->
+    <!-- KEEPER -->
     <section id="page-keeper" class="hidden">
       <div class="pagehead">
         <div class="band">
-          <h1>건강지킴이 — 알림</h1>
+          <h1>건강지킴 알리미</h1>
           <p>눈 휴식과 스트레칭 알림 주기를 설정하세요.</p>
         </div>
         <div class="pagebody container">
@@ -207,13 +207,13 @@
 
             <div class="row" style="margin-top:8px">
               <button id="btnStart" class="btn primary">알림 시작</button>
-              <button id="btnStop" class="btn ghost">중지</button>
-              <button id="btnTest" class="btn ghost">테스트 알림</button>
-              <button class="btn ghost" data-nav="home">← 홈</button>
+              <button id="btnStop" class="btn light">중지</button>
+              <button id="btnTest" class="btn light">테스트 알림</button>
+              <button class="btn light" data-nav="home">← 홈</button>
             </div>
 
             <div class="row" style="margin-top:8px;align-items:center">
-              <span id="ticker" class="pill" style="background:#eef7ff;color:#0b62c7">대기 중…</span>
+              <span id="ticker" class="btn light">대기 중…</span>
               <span class="muted" id="keeperStateHint">알림 권한 상태는 상단 바에서 확인/변경할 수 있어요.</span>
             </div>
           </article>
@@ -224,7 +224,7 @@
           </article>
         </div>
       </div>
-    </section> <!-- ★ 건강지킴이 섹션 확실히 분리/닫힘 -->
+    </section>
 
     <!-- Diary view modal -->
     <div id="viewModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="viewTitle">
@@ -232,13 +232,13 @@
         <h3 id="viewTitle">기록 보기</h3>
         <div id="viewBody" class="entry" style="margin-top:8px"></div>
         <div class="actions">
-          <button id="btnCloseView" class="btn ghost">닫기</button>
+          <button id="btnCloseView" class="btn light">닫기</button>
         </div>
       </div>
     </div>
 
     <div id="toast" class="pill" style="position:fixed;right:16px;bottom:16px;display:none;background:#0f172a;color:#fff">알림 권한이 꺼져 있어요. 상단 버튼으로 허용해 주세요.</div>
-    <footer>© 건강지킴이 • GitHub Pages</footer>
+    <footer>© 건강지킴이 레오 • GitHub Pages</footer>
   </main>
 
   <script src="./app.js" defer></script>
