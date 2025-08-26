@@ -183,60 +183,72 @@
       if ($("#dBody")) $("#dBody").value = "";
     });
 
-    // 목록 클릭 핸들러
+    // 목록 클릭 핸들러 (closest 기반으로 안정화)
     $("#diaryList")?.addEventListener("click", (e) => {
-      const t = e.target;
-      if (!(t instanceof HTMLElement)) return;
+      const target = e.target;
+      if (!(target instanceof HTMLElement)) return;
 
       // 상세 보기
-      const openAttr = t.closest("[data-open]")?.getAttribute("data-open");
-      if (openAttr !== null && openAttr !== undefined) {
-        const it = loadDiary()[Number(openAttr)];
+      const openEl = target.closest("[data-open]");
+      if (openEl) {
+        const idx = Number(openEl.getAttribute("data-open"));
+        const it = loadDiary()[idx];
         if (it) openView(it);
         return;
       }
 
       // 드롭다운 토글
-      const gearAttr = t.closest("[data-gear]")?.getAttribute("data-gear");
-      if (gearAttr !== null && gearAttr !== undefined) {
-        const dd = document.getElementById("dd-" + gearAttr);
+      const gearEl = target.closest("[data-gear]");
+      if (gearEl) {
+        const idx = gearEl.getAttribute("data-gear");
+        const dd = document.getElementById("dd-" + idx);
         if (dd) dd.style.display = dd.style.display === "block" ? "none" : "block";
         return;
       }
 
-      // 편집  ★ 확인 대화창 추가
-      const edit = t.getAttribute("data-edit");
-      if (edit !== null) {
+      // 편집  ★ 확인 대화창 유지
+      const editEl = target.closest("[data-edit]");
+      if (editEl) {
+        const idx = Number(editEl.getAttribute("data-edit"));
         if (!confirm("이 기록을 편집하시겠습니까?")) {
-          const dd = document.getElementById("dd-" + edit);
+          const dd = document.getElementById("dd-" + idx);
           if (dd) dd.style.display = "none";
           return;
         }
-        const it = loadDiary()[Number(edit)];
+        const it = loadDiary()[idx];
         if ($("#dTitle")) $("#dTitle").value = it?.title || "";
         if ($("#dDate")) $("#dDate").value = it?.date || todayYMD();
         if ($("#dBody")) $("#dBody").value = it?.body || "";
-        editingIndex = Number(edit);
+        editingIndex = idx;
         const btn = $("#btnSaveDiary");
         if (btn) btn.textContent = "수정 저장";
         go("diary");
-        const dd = document.getElementById("dd-" + edit);
+        const dd = document.getElementById("dd-" + idx);
         if (dd) dd.style.display = "none";
         return;
       }
 
       // 삭제
-      const del = t.getAttribute("data-del");
-      if (del !== null) {
+      const delEl = target.closest("[data-del]");
+      if (delEl) {
+        const idx = Number(delEl.getAttribute("data-del"));
         if (confirm("정말 삭제하시겠습니까?")) {
           const list = loadDiary();
-          list.splice(Number(del), 1);
+          list.splice(idx, 1);
           saveDiaryList(list);
         }
-        const dd = document.getElementById("dd-" + del);
+        const dd = document.getElementById("dd-" + idx);
         if (dd) dd.style.display = "none";
         return;
       }
+    });
+
+    // 드롭다운 외부 클릭 시 자동 닫기
+    document.addEventListener("click", (e) => {
+      const t = e.target;
+      if (!(t instanceof HTMLElement)) return;
+      if (t.closest(".dropdown") || t.closest(".gear")) return;
+      document.querySelectorAll(".dropdown").forEach((d) => (d.style.display = "none"));
     });
 
     $("#btnCloseView")?.addEventListener("click", closeView);
@@ -383,7 +395,7 @@
   function initKeeper() {
     $("#btnStart")?.addEventListener("click", startKeeper);
     $("#btnStop")?.addEventListener("click", stopKeeper);
-    $("#btnTest")?.addEventListener("click", () => notify("테스트 알림", "권한/표시 확인용입니다."));
+    // ★ 테스트 알림 버튼 리스너 제거 (요청사항)
   }
 
   // ===== Boot =====
