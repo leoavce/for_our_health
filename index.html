@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>건강지킴이</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --blue:#2ea2ff;      /* 상단 배경 하늘색 */
+      --blue-700:#1b76d1;  /* 버튼/포커스 */
+      --bg:#f5f7fb;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --ring:#d0e7ff;
+      --shadow:0 12px 30px rgba(22,119,255,.12);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:Pretendard,system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans KR",sans-serif;background:var(--bg);color:var(--text)}
+
+    /* 헤더 히어로 */
+    .hero{position:relative;background:var(--blue);color:white;padding:26px 20px 100px}
+    .hero .topbar{display:flex;align-items:center;gap:16px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+    .brand .logo{width:28px;height:28px;background:#fff;border-radius:8px;display:grid;place-items:center;color:var(--blue-700)}
+    .user{margin-left:auto;display:flex;align-items:center;gap:10px}
+    .user img{width:32px;height:32px;border-radius:50%;box-shadow:0 1px 0 rgba(0,0,0,.12)}
+
+    .hero h1{font-size:26px;margin:20px 0 6px}
+    .hero p{margin:0;color:#eaf4ff}
+
+    /* 파형 배경 */
+    .wave{position:absolute;inset:auto 0 -1px 0;height:100px}
+    .wave svg{width:100%;height:100%}
+
+    /* 네비 */
+    .tabs{max-width:1100px;margin:-60px auto 0;padding:0 20px}
+    .tabbar{display:flex;gap:12px;flex-wrap:wrap}
+    .tabbar button{appearance:none;border:0;background:var(--card);padding:12px 16px;border-radius:14px;box-shadow:var(--shadow);cursor:pointer;color:var(--muted);font-weight:600}
+    .tabbar button.active{color:var(--text);outline:2px solid var(--ring)}
+
+    /* 콘텐츠 그리드 */
+    .container{max-width:1100px;margin:18px auto;padding:0 20px;display:grid;gap:18px}
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+    .card h2{margin:0 0 12px;font-size:20px}
+    .muted{color:var(--muted)}
+
+    /* 폼 스타일 */
+    input, textarea, select, button{font:inherit}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .field{display:flex;flex-direction:column;gap:6px;min-width:220px;flex:1}
+    .input, textarea{padding:12px;border:1px solid #e6edf6;border-radius:12px;background:#fbfdff}
+    textarea{min-height:140px;resize:vertical}
+    .btn{background:var(--blue-700);color:#fff;border:0;border-radius:12px;padding:10px 14px;cursor:pointer}
+    .btn.ghost{background:#e9f3ff;color:#1358a6}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+
+    /* 다이어리 카드 */
+    .entry{border:1px solid #eef2ff;border-radius:14px;padding:14px;background:white}
+    .entry h3{margin:0 0 8px;font-size:16px}
+    .entry p{margin:0;color:#475569;white-space:pre-wrap}
+
+    /* 알림 상태 라벨 */
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:#eef7ff;color:#0b62c7;font-weight:600;font-size:13px}
+
+    /* 토스트 (알림 권한 없을 때) */
+    .toast{position:fixed;right:16px;bottom:16px;background:#0f172a;color:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.2);display:none}
+    .toast.show{display:block}
+
+    /* 푸터 */
+    footer{padding:30px 20px;color:#8a99ad;text-align:center}
+
+    @media (max-width:640px){
+      .hero{padding:22px 16px 100px}
+      .hero h1{font-size:22px}
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="topbar">
+      <div class="brand"><div class="logo">H</div>건강지킴이</div>
+      <div class="user">
+        <span id="userLabel" class="pill">게스트</span>
+        <button class="btn ghost" id="btnSetUser">사용자 설정</button>
+      </div>
+    </div>
+    <h1>교육에 대한 끊임없는 도전, 행복한 내일을 함께 합니다.</h1>
+    <p>페이지만 켜두면, 설정한 주기로 눈 휴식과 스트레칭 알림을 띄워 드립니다.</p>
+    <div class="wave">
+      <svg viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0 C300,100 900,0 1200,80 L1200,120 L0,120 Z" fill="#f5f7fb"/></svg>
+    </div>
+  </header>
+
+  <main class="tabs">
+    <nav class="tabbar">
+      <button data-tab="diary" class="active">개인 다이어리</button>
+      <button data-tab="menu">오늘의 식단</button>
+      <button data-tab="keeper">건강지킴이</button>
+      <span id="notifState" class="pill" title="알림 권한 상태">알림: 확인필요</span>
+      <button id="btnAskPerm" class="btn ghost" style="margin-left:auto">알림 권한 요청</button>
+    </nav>
+
+    <!-- 개인 다이어리 -->
+    <section id="diary" class="container">
+      <article class="card">
+        <h2>오늘의 기록</h2>
+        <div class="row">
+          <div class="field"><label>제목</label><input id="dTitle" class="input" placeholder="제목" /></div>
+          <div class="field" style="max-width:200px"><label>날짜</label><input id="dDate" class="input" type="date"/></div>
+        </div>
+        <div class="field"><label>내용</label><textarea id="dBody" placeholder="하루를 기록해 보세요"></textarea></div>
+        <div class="row">
+          <button id="btnSaveDiary" class="btn">저장</button>
+          <button id="btnClearDiary" class="btn ghost">입력 지우기</button>
+        </div>
+      </article>
+      <article class="card">
+        <h2>내 기록 목록</h2>
+        <div id="diaryList" class="grid"></div>
+      </article>
+    </section>
+
+    <!-- 오늘의 식단 -->
+    <section id="menu" class="container" style="display:none">
+      <article class="card">
+        <h2>오늘의 식단</h2>
+        <div class="row">
+          <div class="field"><label>날짜</label><input id="mDate" class="input" type="date"/></div>
+          <div class="field"><label>아침</label><input id="mBreakfast" class="input" placeholder="예: 달걀, 샐러드"/></div>
+          <div class="field"><label>점심</label><input id="mLunch" class="input" placeholder="예: 비빔밥"/></div>
+          <div class="field"><label>저녁</label><input id="mDinner" class="input" placeholder="예: 구운 생선"/></div>
+        </div>
+        <div class="row">
+          <button id="btnSaveMenu" class="btn">저장</button>
+          <button id="btnTodayFill" class="btn ghost">오늘 날짜로</button>
+        </div>
+      </article>
+      <article class="card">
+        <h2>나의 식단 기록</h2>
+        <div id="menuList" class="grid"></div>
+      </article>
+    </section>
+
+    <!-- 건강지킴이 -->
+    <section id="keeper" class="container" style="display:none">
+      <article class="card">
+        <h2>건강지킴이 — 간격 알림</h2>
+        <p class="muted">페이지가 열려 있는 동안, 설정 주기로 OS 알림을 띄웁니다. (무음)</p>
+        <div class="row">
+          <div class="field">
+            <label>눈 휴식(먼 곳 바라보기) 주기(분)</label>
+            <input id="eyeMins" class="input" type="number" min="1" step="1" value="20"/>
+          </div>
+          <div class="field">
+            <label>스트레칭 주기(분)</label>
+            <input id="stretchMins" class="input" type="number" min="1" step="1" value="60"/>
+          </div>
+        </div>
+        <div class="row">
+          <button id="btnStart" class="btn">알림 시작</button>
+          <button id="btnStop" class="btn ghost">중지</button>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <span class="muted" id="ticker">대기 중…</span>
+        </div>
+      </article>
+      <article class="card">
+        <h2>로그</h2>
+        <pre id="log" class="entry" style="white-space:pre-wrap"></pre>
+      </article>
+    </section>
+  </main>
+
+  <div id="toast" class="toast">알림 권한이 꺼져 있어요. 상단의 "알림 권한 요청"을 눌러 주세요.</div>
+
+  <footer>© 건강지킴이 • GitHub Pages</footer>
+
+  <script>
+    // ————— 유틸 —————
+    const $ = (s)=>document.querySelector(s);
+    const nowDateInput = ()=> new Date().toISOString().slice(0,10);
+    const log = (m)=>{ const el=$('#log'); el.textContent += `[${new Date().toLocaleTimeString()}] ${m}\n`; el.scrollTop=el.scrollHeight; };
+
+    // ————— 사용자 네임스페이스 —————
+    const user = {
+      get name(){ return localStorage.getItem('user.name') || 'guest'; },
+      set name(v){ localStorage.setItem('user.name', v); renderUser(); }
+    };
+    function ns(key){ return `${user.name}:${key}`; }
+    function renderUser(){ $('#userLabel').textContent = user.name; }
+
+    // ————— 탭 라우팅 —————
+    const tabs = ['diary','menu','keeper'];
+    function showTab(id){ tabs.forEach(t=>{ $('#'+t).style.display = (t===id)?'grid':'none'; $('[data-tab="'+t+'"]').classList.toggle('active', t===id); }); location.hash = id; }
+    window.addEventListener('hashchange', ()=>{ const t=location.hash.replace('#','')||'diary'; if(tabs.includes(t)) showTab(t); });
+
+    // ————— 알림 권한/서비스워커 —————
+    let swReady = false;
+    async function registerSW(){ if(!('serviceWorker' in navigator)) return; try{ const reg = await navigator.serviceWorker.register('/sw.js'); swReady = !!reg; }catch{} }
+    async function checkPerm(){
+      let state = 'unsupported';
+      if('Notification' in window){ state = Notification.permission; }
+      const label = $('#notifState');
+      if(state==='granted') label.textContent = '알림: 사용중';
+      else if(state==='denied') label.textContent = '알림: 거부됨';
+      else label.textContent = '알림: 확인필요';
+      return state;
+    }
+    async function askPerm(){ if(!('Notification' in window)) return; const p = await Notification.requestPermission(); await checkPerm(); if(p!=='granted'){ toast(); } }
+
+    function toast(){ const t=$('#toast'); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 3200); }
+
+    function notify(title, body){
+      if(!('Notification' in window)) return;
+      if(Notification.permission!=='granted'){ toast(); return; }
+      navigator.serviceWorker.getRegistration().then(reg=>{
+        if(reg && reg.showNotification){ reg.showNotification(title,{ body, icon:'https://fav.farm/💙', requireInteraction:true }); }
+        else { new Notification(title,{ body }); }
+      });
+    }
+
+    // ————— 다이어리 —————
+    function loadDiary(){ const list = JSON.parse(localStorage.getItem(ns('diary'))||'[]'); return list; }
+    function saveDiaryList(list){ localStorage.setItem(ns('diary'), JSON.stringify(list)); renderDiary(); }
+    function renderDiary(){
+      const list = loadDiary().sort((a,b)=>b.date.localeCompare(a.date));
+      const wrap = $('#diaryList'); wrap.innerHTML='';
+      list.forEach((it,idx)=>{
+        const el = document.createElement('div');
+        el.className = 'entry';
+        el.innerHTML = `<h3>${it.title||'(제목 없음)'} <span class="muted">${it.date}</span></h3><p>${it.body||''}</p><div class="row" style="margin-top:10px"><button class="btn ghost" data-edit="${idx}">불러오기</button><button class="btn ghost" data-del="${idx}">삭제</button></div>`;
+        wrap.appendChild(el);
+      });
+    }
+    function initDiary(){
+      $('#dDate').value = nowDateInput();
+      $('#btnSaveDiary').onclick = ()=>{
+        const item = { title: $('#dTitle').value.trim(), date: $('#dDate').value, body: $('#dBody').value.trim(), ts: Date.now() };
+        const list = loadDiary(); list.push(item); saveDiaryList(list);
+        $('#dTitle').value=''; $('#dBody').value=''; $('#dDate').value=nowDateInput();
+      };
+      $('#btnClearDiary').onclick = ()=>{ $('#dTitle').value=''; $('#dBody').value=''; };
+      $('#diaryList').addEventListener('click', (e)=>{
+        const del = e.target.getAttribute('data-del');
+        const edit = e.target.getAttribute('data-edit');
+        if(del!==null){ const list = loadDiary(); list.splice(Number(del),1); saveDiaryList(list); }
+        if(edit!==null){ const it = loadDiary()[Number(edit)]; $('#dTitle').value=it.title; $('#dDate').value=it.date; $('#dBody').value=it.body; showTab('diary'); }
+      });
+      renderDiary();
+    }
+
+    // ————— 식단 —————
+    function loadMenu(){ return JSON.parse(localStorage.getItem(ns('menu'))||'{}'); }
+    function saveMenu(obj){ localStorage.setItem(ns('menu'), JSON.stringify(obj)); renderMenu(); }
+    function renderMenu(){
+      const data = loadMenu(); const wrap = $('#menuList'); wrap.innerHTML='';
+      Object.keys(data).sort().reverse().forEach(date=>{
+        const m = data[date];
+        const el = document.createElement('div'); el.className='entry';
+        el.innerHTML = `<h3>${date}</h3><p>아침: ${m.b||'-'}\n점심: ${m.l||'-'}\n저녁: ${m.d||'-'}</p><div class="row" style="margin-top:10px"><button class="btn ghost" data-load="${date}">불러오기</button><button class="btn ghost" data-del="${date}">삭제</button></div>`;
+        wrap.appendChild(el);
+      });
+    }
+    function initMenu(){
+      $('#mDate').value = nowDateInput();
+      $('#btnTodayFill').onclick = ()=>$('#mDate').value = nowDateInput();
+      $('#btnSaveMenu').onclick = ()=>{
+        const date = $('#mDate').value; const obj = loadMenu();
+        obj[date] = { b: $('#mBreakfast').value.trim(), l: $('#mLunch').value.trim(), d: $('#mDinner').value.trim() };
+        saveMenu(obj); $('#mBreakfast').value=$('#mLunch').value=$('#mDinner').value='';
+      };
+      $('#menuList').addEventListener('click', (e)=>{
+        const d = e.target.getAttribute('data-del'); const l = e.target.getAttribute('data-load');
+        if(d){ const obj = loadMenu(); delete obj[d]; saveMenu(obj); }
+        if(l){ const m = loadMenu()[l]; $('#mDate').value=l; $('#mBreakfast').value=m.b||''; $('#mLunch').value=m.l||''; $('#mDinner').value=m.d||''; showTab('menu'); }
+      });
+      renderMenu();
+    }
+
+    // ————— 건강지킴이(간격 알림) —————
+    let eyeTimer=null, stretchTimer=null, tickerInt=null;
+    function startKeeper(){
+      const eyeMins = Math.max(1, Number($('#eyeMins').value||20));
+      const stMins  = Math.max(1, Number($('#stretchMins').value||60));
+      stopKeeper();
+      function loopEye(){ notify('먼 곳을 바라볼 시간입니다 👀', '개인이 설정한 시간 간격으로 먼 곳을 바라보며 눈의 휴식을 취해보아요 :)'); log('눈 휴식 알림'); eyeTimer = setTimeout(loopEye, eyeMins*60*1000); }
+      function loopSt(){ notify('스트레칭 시간! 🧘', '나 스트레칭 시간을 잠시 가져볼까요?'); log('스트레칭 알림'); stretchTimer = setTimeout(loopSt, stMins*60*1000); }
+      eyeTimer = setTimeout(loopEye, eyeMins*60*1000);
+      stretchTimer = setTimeout(loopSt, stMins*60*1000);
+      localStorage.setItem(ns('keeper'), JSON.stringify({eyeMins, stMins, running:true}));
+      tick(); tickerInt = setInterval(tick,1000);
+    }
+    function stopKeeper(){ if(eyeTimer){clearTimeout(eyeTimer);eyeTimer=null;} if(stretchTimer){clearTimeout(stretchTimer);stretchTimer=null;} if(tickerInt){clearInterval(tickerInt);tickerInt=null;} $('#ticker').textContent='대기 중…'; localStorage.setItem(ns('keeper'), JSON.stringify({running:false})); }
+    function tick(){ const e = Number($('#eyeMins').value||20)*60; const s = Number($('#stretchMins').value||60)*60; // 단순 표시용
+      $('#ticker').textContent = `알림 동작 중 • 눈 ${Math.round(e/60)}분 / 스트레칭 ${Math.round(s/60)}분 간격`;
+    }
+    function initKeeper(){
+      const prev = JSON.parse(localStorage.getItem(ns('keeper'))||'{}');
+      if(prev.eyeMins) $('#eyeMins').value = prev.eyeMins;
+      if(prev.stMins)  $('#stretchMins').value = prev.stMins;
+      if(prev.running) startKeeper();
+      $('#btnStart').onclick = startKeeper; $('#btnStop').onclick = stopKeeper;
+    }
+
+    // ————— 이벤트/부팅 —————
+    document.addEventListener('DOMContentLoaded', async ()=>{
+      renderUser();
+      await registerSW();
+      await checkPerm();
+
+      // 탭
+      document.querySelectorAll('.tabbar button[data-tab]').forEach(b=> b.addEventListener('click', ()=>showTab(b.dataset.tab)) );
+      showTab(location.hash.replace('#','')||'diary');
+
+      // 사용자 설정
+      $('#btnSetUser').onclick = ()=>{ const v = prompt('사용자 이름을 입력하세요', user.name); if(v){ user.name = v.trim(); renderDiary(); renderMenu(); } };
+      $('#btnAskPerm').onclick = askPerm;
+
+      // 모듈 초기화
+      initDiary();
+      initMenu();
+      initKeeper();
+    });
+  </script>
+</body>
+</html>
