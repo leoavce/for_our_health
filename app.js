@@ -204,9 +204,14 @@
         return;
       }
 
-      // 편집
+      // 편집  ★ 확인 대화창 추가
       const edit = t.getAttribute("data-edit");
       if (edit !== null) {
+        if (!confirm("이 기록을 편집하시겠습니까?")) {
+          const dd = document.getElementById("dd-" + edit);
+          if (dd) dd.style.display = "none";
+          return;
+        }
         const it = loadDiary()[Number(edit)];
         if ($("#dTitle")) $("#dTitle").value = it?.title || "";
         if ($("#dDate")) $("#dDate").value = it?.date || todayYMD();
