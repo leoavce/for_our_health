@@ -1,6 +1,4 @@
-// index.html에서 './sw.js' 로 등록하세요 (상대경로!)
-// GitHub Pages 프로젝트 사이트 경로에서 404 피함.
-
+// index.html에서 navigator.serviceWorker.register('./sw.js', { scope: './' }) 로 등록하세요.
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
 
