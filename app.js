@@ -1,4 +1,4 @@
-/* 건강지킴이 — 홈/세부 라우팅 안정화, 무음 알림, 다이어리(YYYYMMDD + 보기/편집/삭제, 노션형 에디터) */
+/* 건강지킴이 — 홈/세부 라우팅 안정화, 무음 알림, 다이어리(YYYYMMDD + 보기/편집/삭제, 노션형 에디터 + 이미지) */
 (() => {
   const $ = (s) => document.querySelector(s);
 
@@ -85,18 +85,20 @@
   const textFromHTML = (html = "") => {
     const tmp = document.createElement("div"); tmp.innerHTML = html; return tmp.textContent || "";
   };
-  // 간단 sanitize (허용 태그만 남김) — 체크/코드 관련 제거
+  // 간단 sanitize — IMG/A 허용
   const sanitize = (html = "") => {
-    const allow = new Set(["DIV","P","SPAN","STRONG","EM","U","S","BLOCKQUOTE","HR","BR","A"]);
+    const allow = new Set(["DIV","P","SPAN","STRONG","EM","U","S","BLOCKQUOTE","HR","BR","A","IMG"]);
     const root = document.createElement("div"); root.innerHTML = html;
     const walk = (node) => {
       [...node.children].forEach((el) => {
         if (!allow.has(el.tagName)) { el.replaceWith(...el.childNodes); return; }
         [...el.attributes].forEach((a) => {
           if (el.tagName === "A" && a.name === "href") { /* keep */ }
+          else if (el.tagName === "IMG" && (a.name === "src" || a.name === "alt")) { /* keep */ }
           else { el.removeAttribute(a.name); }
         });
         if (el.tagName === "A") { el.setAttribute("target","_blank"); el.setAttribute("rel","noopener noreferrer"); }
+        if (el.tagName === "IMG") { el.setAttribute("alt", el.getAttribute("alt") || "image"); }
         walk(el);
       });
     };
@@ -104,7 +106,7 @@
     return root.innerHTML;
   };
 
-  // ===== Diary (id 기반 + 리치 에디터) =====
+  // ===== Diary (id 기반 + 리치 에디터 + 이미지) =====
   let editingId = null; // null: 신규, string: 수정 중
   const loadDiary = () => JSON.parse(localStorage.getItem(ns("diary")) || "[]");
   const saveDiaryList = (list) => { localStorage.setItem(ns("diary"), JSON.stringify(list)); renderDiary(); };
@@ -124,7 +126,7 @@
     const wrap = $("#diaryList"); if (!wrap) return;
     wrap.innerHTML = "";
 
-    // 최신 작성 순(ts desc)으로 렌더 → 좌상단이 최신
+    // 최신 작성 순(ts desc)
     const list = [...loadDiary()].sort((a, b) => (b.ts || 0) - (a.ts || 0));
 
     list.forEach((it) => {
@@ -154,7 +156,8 @@
     const vt = $("#viewTitle"); const vb = $("#viewBody");
     if (vt) vt.textContent = `${it.title || "(제목 없음)"} — ${it.date}`;
     if (vb) {
-      const html = it.contentHTML ? sanitize(it.contentHTML) : (it.body ? `<p>${(it.body||"").replace(/\n/g,"<br>")}</p>` : "(내용 없음)");
+      const html = it.contentHTML ? sanitize(it.contentHTML)
+                                  : (it.body ? `<p>${(it.body||"").replace(/\n/g,"<br>")}</p>` : "(내용 없음)");
       vb.innerHTML = html;
     }
     modal.style.display = "flex";
@@ -169,6 +172,17 @@
     if (txt) insertHTML(`<${tag}>${txt}</${tag}>`);
     else insertHTML(`<${tag}>내용</${tag}>`);
   };
+
+  // 이미지 삽입 유틸 (파일 → dataURL)
+  function insertImageFile(file) {
+    if (!file || !file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const src = reader.result;
+      insertHTML(`<img src="${src}" alt="image">`);
+    };
+    reader.readAsDataURL(file);
+  }
 
   // 커서 이동 유틸
   function setCaretTo(el) {
@@ -193,7 +207,7 @@
   function initDiary() {
     const dDate = $("#dDate"); if (dDate) dDate.value = todayYMD();
 
-    // 툴바 동작 (체크/코드 제거, 콜아웃/인용/링크/구분선만)
+    // 툴바 동작 (콜아웃/인용/구분선/링크/이미지)
     document.querySelectorAll(".toolbar .tbtn").forEach((b) => {
       b.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -214,11 +228,45 @@
         if (block === "quote") wrapSelection("blockquote");
         else if (block === "hr") insertHTML("<hr>");
         else if (block === "callout") insertHTML('<div class="callout"><span>💡</span><div>콜아웃 내용을 입력하세요</div></div>');
+        else if (block === "image") {
+          $("#imgPicker")?.click();
+        }
       });
     });
 
-    // 에디터 키보드 핸들러: 콜아웃 탈출(Enter), 줄바꿈(Shift+Enter), Esc로 탈출
+    // 파일선택 → 이미지 삽입
+    $("#imgPicker")?.addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (file) insertImageFile(file);
+      e.target.value = "";
+    });
+
+    // 드래그&드롭 이미지
     const editor = $("#dBodyRich");
+    editor?.addEventListener("dragover", (e) => { e.preventDefault(); });
+    editor?.addEventListener("drop", (e) => {
+      e.preventDefault();
+      const file = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (file && file.type.startsWith("image/")) insertImageFile(file);
+    });
+
+    // 클립보드 이미지 붙여넣기
+    editor?.addEventListener("paste", (e) => {
+      const items = e.clipboardData && e.clipboardData.items;
+      if (!items) return;
+      for (const it of items) {
+        if (it.type && it.type.startsWith("image/")) {
+          const file = it.getAsFile();
+          if (file) {
+            e.preventDefault();
+            insertImageFile(file);
+            break;
+          }
+        }
+      }
+    });
+
+    // 에디터 키보드 핸들러: 콜아웃 탈출/줄바꿈
     editor?.addEventListener("keydown", (e) => {
       const sel = window.getSelection();
       const anchor = sel?.anchorNode;
@@ -227,7 +275,6 @@
 
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
-        // 콜아웃 뒤에 새 문단 생성하고 포커스 이동
         const p = document.createElement("p");
         p.innerHTML = "<br>";
         co.parentNode.insertBefore(p, co.nextSibling);
@@ -252,7 +299,7 @@
     $("#btnSaveDiary")?.addEventListener("click", () => {
       const title = $("#dTitle")?.value.trim() || "";
       const date  = $("#dDate")?.value.trim() || "";
-      const contentHTML = ($("#dBodyRich")?.innerHTML || "").trim();
+      const contentHTML = sanitize(($("#dBodyRich")?.innerHTML || "").trim());
 
       if (!isYMD(date)) { alert("날짜는 YYYYMMDD 형식으로 입력해 주세요."); return; }
 
@@ -292,7 +339,6 @@
       if (gearEl) {
         e.stopPropagation();
         const id = gearEl.getAttribute("data-gear");
-        // 다른 드롭다운은 모두 닫기
         document.querySelectorAll(".dropdown").forEach((d) => (d.style.display = "none"));
         const dd = document.getElementById("dd-" + id);
         if (dd) dd.style.display = dd.style.display === "block" ? "none" : "block";
