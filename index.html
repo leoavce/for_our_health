@@ -81,6 +81,7 @@
     .editor{border:1px solid #e6edf6;border-radius:12px;background:#fbfdff;min-height:180px;padding:12px}
     .editor:empty:before{content:attr(data-placeholder);color:#94a3b8}
     .editor:focus{outline:2px solid rgba(46,162,255,.25)}
+    .editor img{max-width:100%;height:auto;border-radius:12px;display:block;margin:8px 0}
     blockquote{border-left:3px solid #cbd5e1;margin:8px 0;padding-left:10px;color:#475569;background:#f8fafc;border-radius:8px}
     .callout{display:flex;gap:10px;background:#f1f8ff;border:1px solid #dbeafe;padding:12px;border-radius:12px}
     .callout>span{font-size:20px}
@@ -149,6 +150,8 @@
               <button class="tbtn" data-block="callout">콜아웃</button>
               <button class="tbtn" data-block="hr">구분선</button>
               <button class="tbtn" data-cmd="link">링크</button>
+              <button class="tbtn" data-block="image">이미지</button>
+              <input id="imgPicker" type="file" accept="image/*" class="hidden" />
             </div>
 
             <!-- Rich editor -->
@@ -264,9 +267,7 @@
     </div>
 
     <div id="toast" class="btn light" style="position:fixed;right:16px;bottom:16px;display:none;background:#0f172a;color:#fff">알림 권한이 꺼져 있어요. 상단 버튼으로 허용해 주세요.</div>
-    <footer style="margin:48px 0 12px; font-size:13px; color:#8aa0ba; text-align:center">
-  © For_your_Daily Health 1.1 • Leo
-</footer>
+    <footer>© Daily Health • Leo</footer>
   </main>
 
   <script src="./app.js" defer></script>
