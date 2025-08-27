@@ -67,11 +67,26 @@
     footer{margin:24px 0;color:#8aa0ba;text-align:center}
     .hint{font-size:13px}
 
-    /* Modal for diary view */
+    /* Modal for diary view (scrollable) */
     .modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;padding:16px;z-index:60}
-    .modal .panel{max-width:640px;width:100%;background:#fff;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.24);padding:18px}
+    .modal .panel{max-width:760px;width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.24);padding:18px}
     .modal .panel h3{margin:0 0 8px}
     .modal .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+    #viewBody{flex:1;overflow:auto}
+
+    /* --- Notion-like editor --- */
+    .toolbar{display:flex;gap:6px;flex-wrap:wrap;background:#f5f9ff;border:1px solid #e6edf6;border-radius:12px;padding:6px}
+    .tbtn{border:0;background:#fff;border:1px solid #e6edf6;border-radius:10px;padding:8px 10px;cursor:pointer;font:inherit}
+    .tbtn:hover{background:#f0f6ff}
+    .editor{border:1px solid #e6edf6;border-radius:12px;background:#fbfdff;min-height:180px;padding:12px}
+    .editor:empty:before{content:attr(data-placeholder);color:#94a3b8}
+    .editor:focus{outline:2px solid rgba(46,162,255,.25)}
+    blockquote{border-left:3px solid #cbd5e1;margin:8px 0;padding-left:10px;color:#475569;background:#f8fafc;border-radius:8px}
+    .callout{display:flex;gap:10px;background:#f1f8ff;border:1px solid #dbeafe;padding:12px;border-radius:12px}
+    .callout>span{font-size:20px}
+    label.check{display:flex;gap:8px;align-items:flex-start;padding:4px 0}
+    label.check input{transform:translateY(2px)}
+    hr{border:none;border-top:1px solid #e5e7eb;margin:12px 0}
   </style>
 </head>
 <body>
@@ -126,7 +141,26 @@
               <div style="flex:1"><label>제목</label><input id="dTitle" placeholder="제목" /></div>
               <div style="width:220px"><label>날짜(YYYYMMDD)</label><input id="dDate" inputmode="numeric" maxlength="8" placeholder="예: 20250826" /></div>
             </div>
-            <div style="margin-top:8px"><label>내용</label><textarea id="dBody" placeholder="사용자님의 하루를 남겨주세요 :)"></textarea></div>
+
+            <!-- Notion-like toolbar -->
+            <div class="toolbar" style="margin-top:8px">
+              <button class="tbtn" data-cmd="bold"><b>B</b></button>
+              <button class="tbtn" data-cmd="italic"><i>I</i></button>
+              <button class="tbtn" data-cmd="underline"><u>U</u></button>
+              <button class="tbtn" data-cmd="strikeThrough"><s>S</s></button>
+              <button class="tbtn" data-block="code">코드</button>
+              <button class="tbtn" data-block="quote">인용</button>
+              <button class="tbtn" data-block="callout">콜아웃</button>
+              <button class="tbtn" data-block="check">체크</button>
+              <button class="tbtn" data-block="hr">구분선</button>
+              <button class="tbtn" data-cmd="link">링크</button>
+            </div>
+
+            <!-- Rich editor -->
+            <div id="dBodyRich" class="editor" contenteditable="true" data-placeholder="사용자님의 하루를 남겨주세요 :)"></div>
+            <!-- Hidden textarea for backward compatibility (JS에서 사용 안함, 남겨둠) -->
+            <textarea id="dBody" class="hidden"></textarea>
+
             <div class="row" style="margin-top:8px">
               <button id="btnSaveDiary" class="btn primary">저장</button>
               <button id="btnClearDiary" class="btn light">입력 지우기</button>
@@ -236,7 +270,7 @@
     </div>
 
     <div id="toast" class="btn light" style="position:fixed;right:16px;bottom:16px;display:none;background:#0f172a;color:#fff">알림 권한이 꺼져 있어요. 상단 버튼으로 허용해 주세요.</div>
-    <footer>© 건강지킴이 • GitHub Pages</footer>
+    <footer>© Daily Health • Leo</footer>
   </main>
 
   <script src="./app.js" defer></script>
