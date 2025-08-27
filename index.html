@@ -59,7 +59,7 @@
     .entry p{margin:0;white-space:pre-wrap;color:#475569}
     .gear{position:absolute;top:10px;right:10px;background:transparent;border:0;cursor:pointer;padding:6px}
     .gear svg{width:18px;height:18px}
-    .dropdown{position:absolute;top:32px;right:10px;background:#fff;border:1px solid #e6edf6;border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,.18);display:none;z-index:1000}
+    .dropdown{position:absolute;top:32px;right:10px;background:#fff;border:1px solid #e6edf6;border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,.18);display:none;z-index:10000}
     .dropdown button{display:block;width:120px;text-align:left;background:none;border:0;padding:10px 12px;cursor:pointer}
     .dropdown button:hover{background:#f3f7ff}
 
@@ -84,8 +84,6 @@
     blockquote{border-left:3px solid #cbd5e1;margin:8px 0;padding-left:10px;color:#475569;background:#f8fafc;border-radius:8px}
     .callout{display:flex;gap:10px;background:#f1f8ff;border:1px solid #dbeafe;padding:12px;border-radius:12px}
     .callout>span{font-size:20px}
-    label.check{display:flex;gap:8px;align-items:flex-start;padding:4px 0}
-    label.check input{transform:translateY(2px)}
     hr{border:none;border-top:1px solid #e5e7eb;margin:12px 0}
   </style>
 </head>
@@ -95,7 +93,6 @@
     <div class="bar">
       <div class="brand"><div class="logo">H</div>For_your_Health</div>
       <div class="spacer"></div>
-      <!-- 통일된 크기/폰트 -->
       <span id="notifState" class="btn light">알림: 확인필요</span>
       <button id="btnAskPerm" class="btn light" title="브라우저 알림 권한 요청">알림 권한</button>
       <button class="btn light" data-nav="home">HOME</button>
@@ -148,17 +145,14 @@
               <button class="tbtn" data-cmd="italic"><i>I</i></button>
               <button class="tbtn" data-cmd="underline"><u>U</u></button>
               <button class="tbtn" data-cmd="strikeThrough"><s>S</s></button>
-              <button class="tbtn" data-block="code">코드</button>
               <button class="tbtn" data-block="quote">인용</button>
               <button class="tbtn" data-block="callout">콜아웃</button>
-              <button class="tbtn" data-block="check">체크</button>
               <button class="tbtn" data-block="hr">구분선</button>
               <button class="tbtn" data-cmd="link">링크</button>
             </div>
 
             <!-- Rich editor -->
             <div id="dBodyRich" class="editor" contenteditable="true" data-placeholder="사용자님의 하루를 남겨주세요 :)"></div>
-            <!-- Hidden textarea for backward compatibility (JS에서 사용 안함, 남겨둠) -->
             <textarea id="dBody" class="hidden"></textarea>
 
             <div class="row" style="margin-top:8px">
