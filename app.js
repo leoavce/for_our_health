@@ -85,20 +85,15 @@
   const textFromHTML = (html = "") => {
     const tmp = document.createElement("div"); tmp.innerHTML = html; return tmp.textContent || "";
   };
-  // 아주 간단한 sanitize (허용 태그만 남김)
+  // 간단 sanitize (허용 태그만 남김) — 체크/코드 관련 제거
   const sanitize = (html = "") => {
-    const allow = new Set(["DIV","P","SPAN","STRONG","EM","U","S","CODE","BLOCKQUOTE","HR","BR",
-                           "LABEL","INPUT","A","UL","OL","LI"]);
+    const allow = new Set(["DIV","P","SPAN","STRONG","EM","U","S","BLOCKQUOTE","HR","BR","A"]);
     const root = document.createElement("div"); root.innerHTML = html;
     const walk = (node) => {
       [...node.children].forEach((el) => {
         if (!allow.has(el.tagName)) { el.replaceWith(...el.childNodes); return; }
-        // 안전 속성만 유지
         [...el.attributes].forEach((a) => {
           if (el.tagName === "A" && a.name === "href") { /* keep */ }
-          else if (el.tagName === "INPUT" && a.name === "type") { /* keep */ }
-          else if (a.name.startsWith("data-")) { /* keep */ }
-          else if (a.name === "checked") { /* keep */ }
           else { el.removeAttribute(a.name); }
         });
         if (el.tagName === "A") { el.setAttribute("target","_blank"); el.setAttribute("rel","noopener noreferrer"); }
@@ -114,32 +109,34 @@
   const loadDiary = () => JSON.parse(localStorage.getItem(ns("diary")) || "[]");
   const saveDiaryList = (list) => { localStorage.setItem(ns("diary"), JSON.stringify(list)); renderDiary(); };
 
-  // 기존 데이터에 id 없으면 부여(마이그레이션)
-  const migrateIds = () => {
-    const list = loadDiary();
-    let changed = false;
-    list.forEach((it) => { if (!it.id) { it.id = makeId(); changed = true; } });
+  // 기존 데이터 마이그레이션: id/ts 없으면 부여
+  const migrate = () => {
+    const list = loadDiary(); let changed = false;
+    list.forEach((it) => {
+      if (!it.id) { it.id = makeId(); changed = true; }
+      if (!it.ts) { it.ts = Date.now(); changed = true; }
+    });
     if (changed) localStorage.setItem(ns("diary"), JSON.stringify(list));
   };
 
   function renderDiary() {
-    migrateIds();
+    migrate();
     const wrap = $("#diaryList"); if (!wrap) return;
     wrap.innerHTML = "";
 
-    // 날짜 내림차순 정렬로 렌더 (저장 배열은 그대로 유지)
-    const list = [...loadDiary()].sort((a, b) => b.date.localeCompare(a.date));
+    // 최신 작성 순(ts desc)으로 렌더 → 좌상단이 최신
+    const list = [...loadDiary()].sort((a, b) => (b.ts || 0) - (a.ts || 0));
 
     list.forEach((it) => {
       const id = it.id;
-      const summary = (it.contentHTML ? textFromHTML(it.contentHTML) : (it.body || ""))
-                        .slice(0, 180) + ((it.contentHTML ? textFromHTML(it.contentHTML) : (it.body||"")).length > 180 ? "…" : "");
+      const plain = it.contentHTML ? textFromHTML(it.contentHTML) : (it.body || "");
+      const summary = plain.slice(0, 180) + (plain.length > 180 ? "…" : "");
       const div = document.createElement("div");
       div.className = "entry";
       div.setAttribute("data-id", id);
       div.innerHTML = `
         <button class="gear" title="옵션" aria-label="옵션" data-gear="${id}">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M12 8.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7Z" stroke="#334155" stroke-width="1.6"/><path d="M19.4 13.5a7.5 7.5 0 0 0 0-3l2-.9-1.7-3-2.1.7a7.6 7.6 0 0 0-2.6-1.5L14.7 2h-3.4l-.3 2.3a7.6 7.6 0 0 0-2.6 1.5l-2.1-.7-1.7 3 2 .9a7.5 7.5 0 0 0 0 3l-2 .9 1.7 3 2.1-.7a7.6 7.6 0 0 0 2.6 1.5l2.1.7 1.7-3-2-.9Z" stroke="#94a3b8" stroke-width="1.2"/></svg>
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 8.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7Z" stroke="#334155" stroke-width="1.6"/><path d="M19.4 13.5a7.5 7.5 0 0 0 0-3l2-.9-1.7-3-2.1.7a7.6 7.6 0 0 0-2.6-1.5L14.7 2h-3.4l-.3 2.3a7.6 7.6 0 0 0-2.6 1.5l-2.1-.7-1.7 3 2 .9a7.5 7.5 0 0 0 0 3l-2 .9 1.7 3 2.1-.7a7.6 7.6 0 0 0 2.6-1.5l2.1.7 1.7-3-2-.9Z" stroke="#94a3b8" stroke-width="1.2"/></svg>
         </button>
         <div class="dropdown" id="dd-${id}">
           <button data-edit="${id}">편집</button>
@@ -173,12 +170,33 @@
     else insertHTML(`<${tag}>내용</${tag}>`);
   };
 
+  // 커서 이동 유틸
+  function setCaretTo(el) {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(true);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  function inCallout(node) {
+    if (!node) return null;
+    let n = node.nodeType === 1 ? node : node.parentElement;
+    while (n) {
+      if (n.classList && n.classList.contains("callout")) return n;
+      n = n.parentElement;
+    }
+    return null;
+  }
+
   function initDiary() {
     const dDate = $("#dDate"); if (dDate) dDate.value = todayYMD();
 
-    // 툴바 동작
+    // 툴바 동작 (체크/코드 제거, 콜아웃/인용/링크/구분선만)
     document.querySelectorAll(".toolbar .tbtn").forEach((b) => {
-      b.addEventListener("click", () => {
+      b.addEventListener("click", (e) => {
+        e.stopPropagation();
         const cmd = b.getAttribute("data-cmd");
         const block = b.getAttribute("data-block");
         $("#dBodyRich")?.focus();
@@ -194,11 +212,40 @@
         }
 
         if (block === "quote") wrapSelection("blockquote");
-        else if (block === "code") wrapSelection("code");
         else if (block === "hr") insertHTML("<hr>");
-        else if (block === "check") insertHTML('<label class="check"><input type="checkbox"> <span>체크리스트 항목</span></label>');
         else if (block === "callout") insertHTML('<div class="callout"><span>💡</span><div>콜아웃 내용을 입력하세요</div></div>');
       });
+    });
+
+    // 에디터 키보드 핸들러: 콜아웃 탈출(Enter), 줄바꿈(Shift+Enter), Esc로 탈출
+    const editor = $("#dBodyRich");
+    editor?.addEventListener("keydown", (e) => {
+      const sel = window.getSelection();
+      const anchor = sel?.anchorNode;
+      const co = inCallout(anchor);
+      if (!co) return; // 콜아웃 외부는 기본 동작
+
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        // 콜아웃 뒤에 새 문단 생성하고 포커스 이동
+        const p = document.createElement("p");
+        p.innerHTML = "<br>";
+        co.parentNode.insertBefore(p, co.nextSibling);
+        setCaretTo(p);
+        return;
+      }
+      if (e.key === "Enter" && e.shiftKey) {
+        e.preventDefault();
+        insertHTML("<br>");
+        return;
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        const p = document.createElement("p");
+        p.innerHTML = "<br>";
+        co.parentNode.insertBefore(p, co.nextSibling);
+        setCaretTo(p);
+      }
     });
 
     // 저장
@@ -214,7 +261,7 @@
         list.push({ id: makeId(), title, date, contentHTML, body: textFromHTML(contentHTML), ts: Date.now() });
       } else {
         const idx = list.findIndex((x) => x.id === editingId);
-        if (idx >= 0) list[idx] = { ...list[idx], title, date, contentHTML, body: textFromHTML(contentHTML) };
+        if (idx >= 0) list[idx] = { ...list[idx], title, date, contentHTML, body: textFromHTML(contentHTML), ts: Date.now() };
         editingId = null;
         const btn = $("#btnSaveDiary"); if (btn) btn.textContent = "저장";
       }
@@ -240,10 +287,13 @@
         return;
       }
 
-      // 드롭다운 토글
+      // 드롭다운 토글 (충돌 방지)
       const gearEl = target.closest("[data-gear]");
       if (gearEl) {
+        e.stopPropagation();
         const id = gearEl.getAttribute("data-gear");
+        // 다른 드롭다운은 모두 닫기
+        document.querySelectorAll(".dropdown").forEach((d) => (d.style.display = "none"));
         const dd = document.getElementById("dd-" + id);
         if (dd) dd.style.display = dd.style.display === "block" ? "none" : "block";
         return;
