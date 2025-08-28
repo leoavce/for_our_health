@@ -459,7 +459,7 @@
     const stMins  = Math.max(1, Number($("#stretchMins")?.value || 60));
     stopKeeper();
     const loopEye = () => { notify("먼 곳을 바라볼 시간입니다 👀", "개인이 설정한 시간 간격으로 먼 곳을 바라보며 눈의 휴식을 취해보아요 :)"); log("눈 휴식 알림"); eyeTimer = setTimeout(loopEye, eyeMins*60*1000); };
-    const loopSt  = () => { notify("스트레칭 시간! 🧘", "나 스트레칭 시간을 잠시 가져볼까요?"); log("스트레칭 알림"); stretchTimer = setTimeout(loopSt, stMins*60*1000); };
+    const loopSt  = () => { notify("스트레칭 시간! 🧘", "스트레칭 시간을 잠시 가져볼까요?"); log("스트레칭 알림"); stretchTimer = setTimeout(loopSt, stMins*60*1000); };
     eyeTimer = setTimeout(loopEye, eyeMins*60*1000);
     stretchTimer = setTimeout(loopSt, stMins*60*1000);
     tick(); tickerInt = setInterval(tick, 1000);
