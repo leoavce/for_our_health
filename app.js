@@ -1,4 +1,4 @@
-/* 건강지킴이 — 홈/세부 라우팅 안정화, 무음 알림, 다이어리(YYYYMMDD + 보기/편집/삭제, 노션형 에디터 + 이미지) */
+/* 건강지킴이 — 라우팅/알림/다이어리(리치텍스트+이미지) + 식단 + 알림 + Exercise + Spotify Playlist */
 (() => {
   const $ = (s) => document.querySelector(s);
 
@@ -21,8 +21,8 @@
   };
   const isYMD = (s) => /^\d{8}$/.test(s);
 
-  // ===== Router (홈/다이어리/식단/건강지킴이) =====
-  const pages = ["home", "diary", "menu", "keeper"];
+  // ===== Router =====
+  const pages = ["home", "diary", "menu", "keeper", "exercise", "playlist"];
   function go(id) {
     pages.forEach((p) => show(document.getElementById("page-" + p), p === id));
     history.replaceState(null, "", "#" + id);
@@ -85,7 +85,7 @@
   const textFromHTML = (html = "") => {
     const tmp = document.createElement("div"); tmp.innerHTML = html; return tmp.textContent || "";
   };
-  // 간단 sanitize — IMG/A 허용
+  // sanitize — IMG/A 허용
   const sanitize = (html = "") => {
     const allow = new Set(["DIV","P","SPAN","STRONG","EM","U","S","BLOCKQUOTE","HR","BR","A","IMG"]);
     const root = document.createElement("div"); root.innerHTML = html;
@@ -107,17 +107,13 @@
   };
 
   // ===== Diary (id 기반 + 리치 에디터 + 이미지) =====
-  let editingId = null; // null: 신규, string: 수정 중
+  let editingId = null;
   const loadDiary = () => JSON.parse(localStorage.getItem(ns("diary")) || "[]");
   const saveDiaryList = (list) => { localStorage.setItem(ns("diary"), JSON.stringify(list)); renderDiary(); };
 
-  // 기존 데이터 마이그레이션: id/ts 없으면 부여
   const migrate = () => {
     const list = loadDiary(); let changed = false;
-    list.forEach((it) => {
-      if (!it.id) { it.id = makeId(); changed = true; }
-      if (!it.ts) { it.ts = Date.now(); changed = true; }
-    });
+    list.forEach((it) => { if (!it.id) { it.id = makeId(); changed = true; } if (!it.ts) { it.ts = Date.now(); changed = true; }});
     if (changed) localStorage.setItem(ns("diary"), JSON.stringify(list));
   };
 
@@ -126,9 +122,7 @@
     const wrap = $("#diaryList"); if (!wrap) return;
     wrap.innerHTML = "";
 
-    // 최신 작성 순(ts desc)
     const list = [...loadDiary()].sort((a, b) => (b.ts || 0) - (a.ts || 0));
-
     list.forEach((it) => {
       const id = it.id;
       const plain = it.contentHTML ? textFromHTML(it.contentHTML) : (it.body || "");
@@ -164,50 +158,32 @@
   }
   function closeView() { const modal = $("#viewModal"); if (modal) modal.style.display = "none"; }
 
-  // --- Notion-like editor helpers ---
   const insertHTML = (html) => document.execCommand("insertHTML", false, html);
   const wrapSelection = (tag) => {
-    const sel = window.getSelection();
-    const txt = sel && sel.toString();
-    if (txt) insertHTML(`<${tag}>${txt}</${tag}>`);
-    else insertHTML(`<${tag}>내용</${tag}>`);
+    const sel = window.getSelection(); const txt = sel && sel.toString();
+    if (txt) insertHTML(`<${tag}>${txt}</${tag}>`); else insertHTML(`<${tag}>내용</${tag}>`);
   };
 
-  // 이미지 삽입 유틸 (파일 → dataURL)
   function insertImageFile(file) {
     if (!file || !file.type.startsWith("image/")) return;
     const reader = new FileReader();
-    reader.onload = () => {
-      const src = reader.result;
-      insertHTML(`<img src="${src}" alt="image">`);
-    };
+    reader.onload = () => { const src = reader.result; insertHTML(`<img src="${src}" alt="image">`); };
     reader.readAsDataURL(file);
   }
 
-  // 커서 이동 유틸
   function setCaretTo(el) {
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    range.collapse(true);
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(range);
+    const range = document.createRange(); range.selectNodeContents(el); range.collapse(true);
+    const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
   }
-
   function inCallout(node) {
-    if (!node) return null;
-    let n = node.nodeType === 1 ? node : node.parentElement;
-    while (n) {
-      if (n.classList && n.classList.contains("callout")) return n;
-      n = n.parentElement;
-    }
+    if (!node) return null; let n = node.nodeType === 1 ? node : node.parentElement;
+    while (n) { if (n.classList && n.classList.contains("callout")) return n; n = n.parentElement; }
     return null;
   }
 
   function initDiary() {
     const dDate = $("#dDate"); if (dDate) dDate.value = todayYMD();
 
-    // 툴바 동작 (콜아웃/인용/구분선/링크/이미지)
     document.querySelectorAll(".toolbar .tbtn").forEach((b) => {
       b.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -224,83 +200,35 @@
           document.execCommand(cmd, false, null);
           return;
         }
-
         if (block === "quote") wrapSelection("blockquote");
         else if (block === "hr") insertHTML("<hr>");
         else if (block === "callout") insertHTML('<div class="callout"><span>💡</span><div>콜아웃 내용을 입력하세요</div></div>');
-        else if (block === "image") {
-          $("#imgPicker")?.click();
-        }
+        else if (block === "image") { $("#imgPicker")?.click(); }
       });
     });
 
-    // 파일선택 → 이미지 삽입
     $("#imgPicker")?.addEventListener("change", (e) => {
-      const file = e.target.files && e.target.files[0];
-      if (file) insertImageFile(file);
-      e.target.value = "";
+      const file = e.target.files && e.target.files[0]; if (file) insertImageFile(file); e.target.value = "";
     });
 
-    // 드래그&드롭 이미지
     const editor = $("#dBodyRich");
     editor?.addEventListener("dragover", (e) => { e.preventDefault(); });
-    editor?.addEventListener("drop", (e) => {
-      e.preventDefault();
-      const file = e.dataTransfer.files && e.dataTransfer.files[0];
-      if (file && file.type.startsWith("image/")) insertImageFile(file);
-    });
-
-    // 클립보드 이미지 붙여넣기
+    editor?.addEventListener("drop", (e) => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f && f.type.startsWith("image/")) insertImageFile(f); });
     editor?.addEventListener("paste", (e) => {
-      const items = e.clipboardData && e.clipboardData.items;
-      if (!items) return;
-      for (const it of items) {
-        if (it.type && it.type.startsWith("image/")) {
-          const file = it.getAsFile();
-          if (file) {
-            e.preventDefault();
-            insertImageFile(file);
-            break;
-          }
-        }
-      }
+      const items = e.clipboardData && e.clipboardData.items; if (!items) return;
+      for (const it of items) if (it.type?.startsWith("image/")) { const f = it.getAsFile(); if (f){ e.preventDefault(); insertImageFile(f); break; } }
     });
-
-    // 에디터 키보드 핸들러: 콜아웃 탈출/줄바꿈
     editor?.addEventListener("keydown", (e) => {
-      const sel = window.getSelection();
-      const anchor = sel?.anchorNode;
-      const co = inCallout(anchor);
-      if (!co) return; // 콜아웃 외부는 기본 동작
-
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        const p = document.createElement("p");
-        p.innerHTML = "<br>";
-        co.parentNode.insertBefore(p, co.nextSibling);
-        setCaretTo(p);
-        return;
-      }
-      if (e.key === "Enter" && e.shiftKey) {
-        e.preventDefault();
-        insertHTML("<br>");
-        return;
-      }
-      if (e.key === "Escape") {
-        e.preventDefault();
-        const p = document.createElement("p");
-        p.innerHTML = "<br>";
-        co.parentNode.insertBefore(p, co.nextSibling);
-        setCaretTo(p);
-      }
+      const sel = window.getSelection(); const co = inCallout(sel?.anchorNode); if (!co) return;
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); const p=document.createElement("p"); p.innerHTML="<br>"; co.parentNode.insertBefore(p,co.nextSibling); setCaretTo(p); }
+      if (e.key === "Enter" && e.shiftKey) { e.preventDefault(); insertHTML("<br>"); }
+      if (e.key === "Escape") { e.preventDefault(); const p=document.createElement("p"); p.innerHTML="<br>"; co.parentNode.insertBefore(p,co.nextSibling); setCaretTo(p); }
     });
 
-    // 저장
     $("#btnSaveDiary")?.addEventListener("click", () => {
       const title = $("#dTitle")?.value.trim() || "";
       const date  = $("#dDate")?.value.trim() || "";
       const contentHTML = sanitize(($("#dBodyRich")?.innerHTML || "").trim());
-
       if (!isYMD(date)) { alert("날짜는 YYYYMMDD 형식으로 입력해 주세요."); return; }
 
       const list = loadDiary();
@@ -309,8 +237,7 @@
       } else {
         const idx = list.findIndex((x) => x.id === editingId);
         if (idx >= 0) list[idx] = { ...list[idx], title, date, contentHTML, body: textFromHTML(contentHTML), ts: Date.now() };
-        editingId = null;
-        const btn = $("#btnSaveDiary"); if (btn) btn.textContent = "저장";
+        editingId = null; const btn=$("#btnSaveDiary"); if (btn) btn.textContent="저장";
       }
       saveDiaryList(list);
       if ($("#dTitle")) $("#dTitle").value = "";
@@ -318,68 +245,41 @@
       if ($("#dDate")) $("#dDate").value = todayYMD();
     });
 
-    $("#btnClearDiary")?.addEventListener("click", () => { if ($("#dTitle")) $("#dTitle").value = ""; if ($("#dBodyRich")) $("#dBodyRich").innerHTML = ""; });
+    $("#btnClearDiary")?.addEventListener("click", () => { const t=$("#dTitle"); const b=$("#dBodyRich"); if (t) t.value=""; if (b) b.innerHTML=""; });
 
-    // 목록 클릭 핸들러 (id 기반)
     $("#diaryList")?.addEventListener("click", (e) => {
-      const target = e.target;
-      if (!(target instanceof HTMLElement)) return;
+      const target = e.target; if (!(target instanceof HTMLElement)) return;
 
-      // 상세 보기
       const openEl = target.closest("[data-open]");
-      if (openEl) {
-        const id = openEl.getAttribute("data-open");
-        const it = loadDiary().find((x) => x.id === id);
-        if (it) openView(it);
-        return;
-      }
+      if (openEl) { const id = openEl.getAttribute("data-open"); const it = loadDiary().find((x) => x.id === id); if (it) openView(it); return; }
 
-      // 드롭다운 토글 (충돌 방지)
       const gearEl = target.closest("[data-gear]");
-      if (gearEl) {
-        e.stopPropagation();
-        const id = gearEl.getAttribute("data-gear");
-        document.querySelectorAll(".dropdown").forEach((d) => (d.style.display = "none"));
-        const dd = document.getElementById("dd-" + id);
-        if (dd) dd.style.display = dd.style.display === "block" ? "none" : "block";
-        return;
-      }
+      if (gearEl) { e.stopPropagation(); const id = gearEl.getAttribute("data-gear"); document.querySelectorAll(".dropdown").forEach((d) => d.style.display="none"); const dd=$("#dd-"+id); if (dd) dd.style.display = dd.style.display==="block"?"none":"block"; return; }
 
-      // 편집
       const editEl = target.closest("[data-edit]");
       if (editEl) {
         const id = editEl.getAttribute("data-edit");
-        if (!confirm("이 기록을 편집하시겠습니까?")) { const dd = document.getElementById("dd-" + id); if (dd) dd.style.display = "none"; return; }
+        if (!confirm("이 기록을 편집하시겠습니까?")) { const dd=$("#dd-"+id); if (dd) dd.style.display="none"; return; }
         const it = loadDiary().find((x) => x.id === id);
         if (it) {
-          if ($("#dTitle")) $("#dTitle").value = it.title || "";
-          if ($("#dDate"))  $("#dDate").value  = it.date || todayYMD();
-          if ($("#dBodyRich")) $("#dBodyRich").innerHTML = it.contentHTML || (it.body ? `<p>${it.body.replace(/\n/g,"<br>")}</p>` : "");
-          editingId = id;
-          const btn = $("#btnSaveDiary"); if (btn) btn.textContent = "수정 저장";
-          go("diary");
+          $("#dTitle").value = it.title || "";
+          $("#dDate").value  = it.date || todayYMD();
+          $("#dBodyRich").innerHTML = it.contentHTML || (it.body ? `<p>${it.body.replace(/\n/g,"<br>")}</p>` : "");
+          editingId = id; const btn=$("#btnSaveDiary"); if (btn) btn.textContent="수정 저장"; go("diary");
         }
-        const dd = document.getElementById("dd-" + id); if (dd) dd.style.display = "none";
-        return;
+        const dd=$("#dd-"+id); if (dd) dd.style.display="none"; return;
       }
 
-      // 삭제
       const delEl = target.closest("[data-del]");
       if (delEl) {
         const id = delEl.getAttribute("data-del");
-        if (confirm("정말 삭제하시겠습니까?")) {
-          const list = loadDiary().filter((x) => x.id !== id);
-          saveDiaryList(list);
-        }
-        const dd = document.getElementById("dd-" + id); if (dd) dd.style.display = "none";
-        return;
+        if (confirm("정말 삭제하시겠습니까?")) { const list = loadDiary().filter((x)=>x.id!==id); saveDiaryList(list); }
+        const dd=$("#dd-"+id); if (dd) dd.style.display="none"; return;
       }
     });
 
-    // 드롭다운 외부 클릭 시 자동 닫기
     document.addEventListener("click", (e) => {
-      const t = e.target;
-      if (!(t instanceof HTMLElement)) return;
+      const t = e.target; if (!(t instanceof HTMLElement)) return;
       if (t.closest(".dropdown") || t.closest(".gear")) return;
       document.querySelectorAll(".dropdown").forEach((d) => (d.style.display = "none"));
     });
@@ -477,6 +377,185 @@
   }
   function initKeeper() { $("#btnStart")?.addEventListener("click", startKeeper); $("#btnStop")?.addEventListener("click", stopKeeper); }
 
+  // ===== Exercise =====
+  const EX_POOL = [
+    { name:"스쿼트", tips:"무릎이 발끝을 넘지 않게", unit:"x12", kcal:8 },
+    { name:"플랭크", tips:"복부에 힘 유지", unit:"60초", kcal:5 },
+    { name:"런지", tips:"상체 곧게", unit:"x10", kcal:7 },
+    { name:"버피", tips:"호흡 일정", unit:"x10", kcal:10 },
+    { name:"푸쉬업", tips:"어깨 내리지 않기", unit:"x12", kcal:7 },
+  ];
+  const loadRoutine = () => JSON.parse(localStorage.getItem(ns("routine")) || "[]");
+  const saveRoutine = (list) => { localStorage.setItem(ns("routine"), JSON.stringify(list)); renderRoutine(); };
+  function pickExercise(){ return EX_POOL[Math.floor(Math.random()*EX_POOL.length)]; }
+  function renderRoutine(){
+    const wrap = $("#ex-list"); if(!wrap) return; wrap.innerHTML="";
+    loadRoutine().forEach((r,i)=>{
+      const div=document.createElement("div"); div.className="exercise-item";
+      div.innerHTML=`<span><b>${r.name}</b> • ${r.set}세트 • ${r.rep}</span>
+                     <div class="row"><button class="btn light" data-rm="${i}">삭제</button></div>`;
+      wrap.appendChild(div);
+    });
+  }
+  function initExercise(){
+    const today = $("#ex-today");
+    const setToday = () => {
+      const e = pickExercise();
+      if (today) today.innerHTML = `<span><b>${e.name}</b> <span class="muted">(${e.unit})</span> — ${e.tips}</span>
+                                    <button id="ex-rand" class="btn light">다시 추천</button>`;
+      $("#ex-rand")?.addEventListener("click", setToday);
+    };
+    setToday();
+
+    $("#ex-add")?.addEventListener("click", ()=>{
+      const name=$("#ex-name").value.trim();
+      const set =$("#ex-set").value.trim();
+      const rep =$("#ex-rep").value.trim();
+      if(!name||!set||!rep) return alert("이름/세트/횟수를 입력하세요");
+      const list=loadRoutine(); list.push({name,set,rep,ts:Date.now()}); saveRoutine(list);
+      $("#ex-name").value=""; $("#ex-set").value=""; $("#ex-rep").value="";
+    });
+    $("#ex-list")?.addEventListener("click",(e)=>{
+      const t=e.target; if(!(t instanceof HTMLElement))return;
+      const rm=t.getAttribute("data-rm"); if(rm){ const list=loadRoutine(); list.splice(Number(rm),1); saveRoutine(list); }
+    });
+    renderRoutine();
+  }
+
+  // ===== Spotify =====
+  const SPOTIFY = {
+    clientId: "YOUR_SPOTIFY_CLIENT_ID",  // ★ 여기에 본인 Client ID 입력
+    redirectUri: window.location.origin + window.location.pathname,
+    scopes: [
+      "user-read-email","playlist-read-private","playlist-modify-private","playlist-modify-public",
+      "user-read-playback-state","user-modify-playback-state","streaming","user-read-currently-playing"
+    ]
+  };
+  let spToken = null, spTokenExp = 0, spUser = null, spPlaylistId = null, spPlayer = null;
+
+  function saveSpAuth(){ localStorage.setItem(ns("sp.auth"), JSON.stringify({token:spToken,exp:spTokenExp})); }
+  function loadSpAuth(){ const v = JSON.parse(localStorage.getItem(ns("sp.auth"))||"null"); if(!v) return; spToken=v.token; spTokenExp=v.exp; }
+  function hasValidToken(){ return spToken && Date.now() < spTokenExp; }
+  function parseHashToken(){
+    if (location.hash.includes("access_token")) {
+      const h = new URLSearchParams(location.hash.replace("#",""));
+      spToken = h.get("access_token");
+      const expiresIn = Number(h.get("expires_in")||"3600");
+      spTokenExp = Date.now() + (expiresIn*1000) - 10000;
+      saveSpAuth();
+      history.replaceState(null,"",location.pathname+location.search); // 해시 정리
+    }
+  }
+  function spLogin(){
+    const url = new URL("https://accounts.spotify.com/authorize");
+    url.searchParams.set("client_id", SPOTIFY.clientId);
+    url.searchParams.set("response_type", "token");
+    url.searchParams.set("redirect_uri", SPOTIFY.redirectUri);
+    url.searchParams.set("scope", SPOTIFY.scopes.join(" "));
+    url.searchParams.set("show_dialog", "true");
+    location.href = url.toString();
+  }
+  function spLogout(){ spToken=null; spTokenExp=0; saveSpAuth(); $("#sp-status").textContent="Spotify: 로그아웃"; spUpdateUI(); }
+
+  async function spFetch(path, opt={}){
+    if(!hasValidToken()) throw new Error("토큰 없음");
+    const res = await fetch(`https://api.spotify.com/v1${path}`, {
+      ...opt,
+      headers: { "Authorization": `Bearer ${spToken}`, "Content-Type":"application/json", ...(opt.headers||{}) }
+    });
+    if(!res.ok) throw new Error("Spotify API 오류");
+    return res.json();
+  }
+
+  async function spMe(){ spUser = await spFetch("/me"); $("#sp-status").textContent = `Spotify: ${spUser.display_name}`; }
+  async function spEnsurePlaylist(){
+    const name = "Daily Health";
+    // 이미 있는지 검색
+    const lists = await spFetch("/me/playlists?limit=50");
+    const hit = lists.items.find(p=>p.name===name);
+    if(hit){ spPlaylistId = hit.id; return hit; }
+    const made = await spFetch(`/users/${spUser.id}/playlists`, { method:"POST", body: JSON.stringify({name, public:false, description:"For your health"}) });
+    spPlaylistId = made.id; return made;
+  }
+
+  function spUpdateUI(){
+    const logged = hasValidToken();
+    $("#sp-login").disabled = logged;
+    $("#sp-logout").disabled = !logged;
+    $("#sp-create").disabled = !logged;
+    $("#sp-search").disabled = !logged;
+    $("#sp-play").disabled = !logged;
+    $("#sp-next").disabled = !logged;
+    $("#sp-prev").disabled = !logged;
+  }
+
+  async function spSearch(){
+    const q = $("#sp-q").value.trim(); if(!q) return;
+    const data = await spFetch(`/search?type=track&limit=10&q=${encodeURIComponent(q)}`);
+    const wrap = $("#sp-results"); wrap.innerHTML="";
+    data.tracks.items.forEach(tr=>{
+      const div=document.createElement("div");
+      div.className="exercise-item";
+      div.innerHTML = `<span><b>${tr.name}</b> — ${tr.artists.map(a=>a.name).join(", ")}</span>
+                       <div class="row">
+                         <button class="btn light" data-add="${tr.uri}">추가</button>
+                         <a class="btn ghost" href="${tr.external_urls.spotify}" target="_blank" rel="noopener">열기</a>
+                       </div>`;
+      wrap.appendChild(div);
+    });
+  }
+
+  async function spAdd(uri){
+    await spEnsurePlaylist();
+    await spFetch(`/playlists/${spPlaylistId}/tracks`, { method:"POST", body: JSON.stringify({ uris:[uri] }) });
+    $("#sp-now").textContent = "추가 완료!";
+  }
+
+  // Web Playback SDK
+  window.onSpotifyWebPlaybackSDKReady = () => {
+    if (!hasValidToken()) return;
+    spPlayer = new Spotify.Player({
+      name: "Daily Health Web Player",
+      getOAuthToken: cb => cb(spToken),
+      volume: 0.6
+    });
+    spPlayer.addListener('ready', ({ device_id }) => { $("#sp-now").textContent = "플레이어 준비됨"; spPlayer.device_id = device_id; });
+    spPlayer.addListener('not_ready', () => { $("#sp-now").textContent = "플레이어 준비 안됨"; });
+    spPlayer.addListener('player_state_changed', (s) => {
+      if (!s) return;
+      const cur = s.track_window.current_track;
+      if (cur) $("#sp-now").textContent = `지금 재생: ${cur.name} — ${cur.artists.map(a=>a.name).join(", ")}`;
+    });
+    spPlayer.connect();
+  };
+
+  async function spPlayPause(){
+    const s = await spPlayer.getCurrentState();
+    if (s && !s.paused) { await spPlayer.pause(); }
+    else { await spPlayer.resume(); }
+  }
+  async function spNext(){ await spPlayer.nextTrack(); }
+  async function spPrev(){ await spPlayer.previousTrack(); }
+
+  async function initSpotify(){
+    parseHashToken(); loadSpAuth(); spUpdateUI();
+    if (hasValidToken()) {
+      await spMe().catch(()=>spLogout());
+      spUpdateUI();
+    }
+    $("#sp-login")?.addEventListener("click", spLogin);
+    $("#sp-logout")?.addEventListener("click", spLogout);
+    $("#sp-create")?.addEventListener("click", async()=>{ if(!hasValidToken()) return; await spEnsurePlaylist(); alert("플레이리스트 준비 완료!"); });
+    $("#sp-search")?.addEventListener("click", async()=>{ try{ await spSearch(); }catch(e){ alert("검색 실패: "+e.message);} });
+    $("#sp-results")?.addEventListener("click", async(e)=>{
+      const t=e.target; if(!(t instanceof HTMLElement)) return;
+      const uri = t.getAttribute("data-add"); if(uri){ try{ await spAdd(uri);}catch(err){ alert("추가 실패"); } }
+    });
+    $("#sp-play")?.addEventListener("click", spPlayPause);
+    $("#sp-next")?.addEventListener("click", spNext);
+    $("#sp-prev")?.addEventListener("click", spPrev);
+  }
+
   // ===== Boot =====
   document.addEventListener("DOMContentLoaded", async () => {
     const u = $("#userLabel"); if (u) u.textContent = user.name;
@@ -494,5 +573,7 @@
     initDiary();
     initMenu();
     initKeeper();
+    initExercise();
+    initSpotify();
   });
 })();
