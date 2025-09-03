@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>For_our_Helath</title>
+  <title>For_our_Health</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"/>
 
   <style>
@@ -16,7 +16,7 @@
 
     /* Top app bar */
     .appbar{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,var(--sky),#5fc0ff);color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.12)}
-    .bar{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:14px 16px}
+    .bar{max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:14px 16px}
     .brand{display:flex;align-items:center;gap:10px;font-weight:900}
     .logo{width:30px;height:30px;border-radius:8px;background:#fff;color:var(--sky-600);display:grid;place-items:center}
     .spacer{flex:1}
@@ -32,17 +32,25 @@
     .btn.ghost{background:#f5f9ff;color:#2563eb;border:1px solid #e6edf6}
 
     /* Shell */
-    .wrap{max-width:1100px;margin:22px auto;padding:0 16px}
-    .card{background:var(--card); border-radius:var(--r); box-shadow:var(--shadow); padding:18px}
+    .wrap{max-width:1280px;margin:22px auto;padding:0 16px}
+    .card{background:var(--card); border-radius:var(--r); box-shadow:var(--shadow); padding:22px}
     .muted{color:#6b7280} .row{display:flex;gap:10px;flex-wrap:wrap}
 
     /* HOME hero */
     .hero{background:var(--card); border-radius:22px; box-shadow:var(--shadow); overflow:hidden}
     .hero-head{background:linear-gradient(180deg,var(--sky),#70c9ff); color:#fff; padding:36px 24px}
     .hero-head h1{margin:0 0 8px;font-size:28px}
-    .hero-body{padding:20px 24px;display:grid;gap:16px}
+    .hero-body{padding:24px;display:grid;gap:28px}
     .nav{display:flex;gap:10px;flex-wrap:wrap}
-    .home-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+    /* HOME 2열 카드 */
+    .home-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+    .home-grid .card{
+      min-height:220px;
+      display:flex;flex-direction:column;justify-content:space-between;
+    }
+    .home-grid .card h3{margin:0 0 14px}
+    .home-grid .card p{margin:0 0 20px}
     @media (max-width:860px){ .home-grid{grid-template-columns:1fr;} }
 
     /* PAGE header */
@@ -69,14 +77,14 @@
     .hidden{display:none}
     footer{margin:36px 0 14px 0;color:#8aa0ba;text-align:center;font-size:12px}
 
-    /* Modal for diary view (scrollable) */
+    /* Modal for diary view */
     .modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;padding:16px;z-index:60}
     .modal .panel{max-width:760px;width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.24);padding:18px}
     .modal .panel h3{margin:0 0 8px}
     .modal .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
     #viewBody{flex:1;overflow:auto}
 
-    /* --- Notion-like editor --- */
+    /* Editor */
     .toolbar{display:flex;gap:6px;flex-wrap:wrap;background:#f5f9ff;border:1px solid #e6edf6;border-radius:12px;padding:6px}
     .tbtn{border:0;background:#fff;border:1px solid #e6edf6;border-radius:10px;padding:8px 10px;cursor:pointer;font:inherit}
     .tbtn:hover{background:#f0f6ff}
@@ -88,10 +96,6 @@
     .callout{display:flex;gap:10px;background:#f1f8ff;border:1px solid #dbeafe;padding:12px;border-radius:12px}
     .callout>span{font-size:20px}
     hr{border:none;border-top:1px solid #e5e7eb;margin:12px 0}
-
-    /* Exercise */
-    .exercise-item{display:flex;align-items:center;justify-content:space-between;border:1px dashed #e2e8f0;border-radius:12px;padding:10px;background:#fbfdff}
-    .chip{display:inline-flex;align-items:center;gap:6px;background:#eef6ff;border:1px solid #dbeafe;border-radius:999px;padding:6px 10px;font-size:12px;color:#2563eb}
   </style>
 </head>
 <body>
@@ -101,7 +105,7 @@
       <div class="brand"><div class="logo">H</div>For_your_Health</div>
       <div class="spacer"></div>
       <span id="notifState" class="btn light">알림: 확인필요</span>
-      <button id="btnAskPerm" class="btn light" title="브라우저 알림 권한 요청">알림 권한</button>
+      <button id="btnAskPerm" class="btn light">알림 권한</button>
       <button class="btn light" data-nav="home">HOME</button>
     </div>
   </header>
@@ -118,27 +122,26 @@
       </div>
       <div class="hero-body">
         <div class="card">
-          <p class="muted">오늘은 어떤 하루를 보내고 계신가요?</p>
+          <p class="muted">오늘은 어떤 하루를 보내고 계신가요? 🙂</p>
           <div class="nav">
             <button class="btn primary" data-nav="diary">Daily Diary</button>
             <button class="btn primary" data-nav="menu">Daily Menu</button>
             <button class="btn primary" data-nav="keeper">Alarm</button>
-            <button class="btn primary" data-nav="exercise">Daily Exercise</button>
-            <button class="btn primary" data-nav="playlist">Daily Playlist</button>
+            <button class="btn primary" data-nav="exercise">Exercise</button>
+            <button class="btn primary" data-nav="playlist">Playlist</button>
           </div>
         </div>
 
-        <!-- 홈 카드 2열: Exercise / Playlist -->
         <div class="home-grid">
           <div class="card">
-            <h3 style="margin:0 0 8px;">Daily Exercise</h3>
-            <p class="muted" style="margin:0 0 12px;">오늘의 추천 운동과 나만의 루틴을 만들어요.</p>
-            <button class="btn ghost" data-nav="exercise">운동 보러가기</button>
+            <h3>⚾ Daily Exercise</h3>
+            <p class="muted">오늘의 추천 운동을 확인하고, 나만의 루틴을 만들어봐요!</p>
+            <button class="btn ghost" data-nav="exercise">오늘의 루틴 확인하기</button>
           </div>
           <div class="card">
-            <h3 style="margin:0 0 8px;">Daily Playlist</h3>
-            <p class="muted" style="margin:0 0 12px;">Spotify로 집중/힐링 플레이리스트를 만들고 재생해요.</p>
-            <button class="btn ghost" data-nav="playlist">플레이리스트 만들기</button>
+            <h3>🎵 Daily Playlist</h3>
+            <p class="muted">Spotify와 집중, 힐링하는 시간을 가져봐요</p>
+            <button class="btn ghost" data-nav="playlist">나만의 플레이리스트 만들기</button>
           </div>
         </div>
 
@@ -348,22 +351,18 @@
     </section>
 
     <!-- Diary view modal -->
-    <div id="viewModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="viewTitle">
+    <div id="viewModal" class="modal" role="dialog" aria-modal="true">
       <div class="panel">
         <h3 id="viewTitle">기록 보기</h3>
         <div id="viewBody" class="entry" style="margin-top:8px"></div>
-        <div class="actions">
-          <button id="btnCloseView" class="btn light">닫기</button>
-        </div>
+        <div class="actions"><button id="btnCloseView" class="btn light">닫기</button></div>
       </div>
     </div>
 
-    <div id="toast" class="btn light" style="position:fixed;right:16px;bottom:16px;display:none;background:#0f172a;color:#fff">알림 권한이 꺼져 있어요. 상단 버튼으로 허용해 주세요.</div>
+    <div id="toast" class="btn light" style="position:fixed;right:16px;bottom:16px;display:none;background:#0f172a;color:#fff">알림 권한이 꺼져 있어요.</div>
     <footer>© Daily Health • Leo</footer>
   </main>
 
-  <!-- Spotify Web Playback SDK -->
-  <script src="https://sdk.scdn.co/spotify-player.js"></script>
   <script src="./app.js" defer></script>
 </body>
 </html>
