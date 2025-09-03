@@ -29,6 +29,7 @@
     }
     .btn.light{background:#fff;color:var(--sky-600)}
     .btn.primary{background:#fff;color:var(--sky-600);box-shadow:0 0 0 2px rgba(255,255,255,.6) inset}
+    .btn.ghost{background:#f5f9ff;color:#2563eb;border:1px solid #e6edf6}
 
     /* Shell */
     .wrap{max-width:1100px;margin:22px auto;padding:0 16px}
@@ -41,6 +42,8 @@
     .hero-head h1{margin:0 0 8px;font-size:28px}
     .hero-body{padding:20px 24px;display:grid;gap:16px}
     .nav{display:flex;gap:10px;flex-wrap:wrap}
+    .home-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    @media (max-width:860px){ .home-grid{grid-template-columns:1fr;} }
 
     /* PAGE header */
     .pagehead{background:var(--card);border-radius:22px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px}
@@ -64,8 +67,7 @@
     .dropdown button:hover{background:#f3f7ff}
 
     .hidden{display:none}
-    footer{margin:24px 0;color:#8aa0ba;text-align:center}
-    .hint{font-size:13px}
+    footer{margin:36px 0 14px 0;color:#8aa0ba;text-align:center;font-size:12px}
 
     /* Modal for diary view (scrollable) */
     .modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;padding:16px;z-index:60}
@@ -86,6 +88,10 @@
     .callout{display:flex;gap:10px;background:#f1f8ff;border:1px solid #dbeafe;padding:12px;border-radius:12px}
     .callout>span{font-size:20px}
     hr{border:none;border-top:1px solid #e5e7eb;margin:12px 0}
+
+    /* Exercise */
+    .exercise-item{display:flex;align-items:center;justify-content:space-between;border:1px dashed #e2e8f0;border-radius:12px;padding:10px;background:#fbfdff}
+    .chip{display:inline-flex;align-items:center;gap:6px;background:#eef6ff;border:1px solid #dbeafe;border-radius:999px;padding:6px 10px;font-size:12px;color:#2563eb}
   </style>
 </head>
 <body>
@@ -117,8 +123,25 @@
             <button class="btn primary" data-nav="diary">Daily Diary</button>
             <button class="btn primary" data-nav="menu">Daily Menu</button>
             <button class="btn primary" data-nav="keeper">Alarm</button>
+            <button class="btn primary" data-nav="exercise">Daily Exercise</button>
+            <button class="btn primary" data-nav="playlist">Daily Playlist</button>
           </div>
         </div>
+
+        <!-- 홈 카드 2열: Exercise / Playlist -->
+        <div class="home-grid">
+          <div class="card">
+            <h3 style="margin:0 0 8px;">Daily Exercise</h3>
+            <p class="muted" style="margin:0 0 12px;">오늘의 추천 운동과 나만의 루틴을 만들어요.</p>
+            <button class="btn ghost" data-nav="exercise">운동 보러가기</button>
+          </div>
+          <div class="card">
+            <h3 style="margin:0 0 8px;">Daily Playlist</h3>
+            <p class="muted" style="margin:0 0 12px;">Spotify로 집중/힐링 플레이리스트를 만들고 재생해요.</p>
+            <button class="btn ghost" data-nav="playlist">플레이리스트 만들기</button>
+          </div>
+        </div>
+
         <div class="card">
           <b>Tip</b>
           <p class="hint">알림은 브라우저가 열려 있을 때 동작합니다(GitHub Pages). Windows/Chrome/Edge는 알림센터(토스트)로 표시돼요.</p>
@@ -140,7 +163,6 @@
               <div style="width:220px"><label></label><input id="dDate" inputmode="numeric" maxlength="8" placeholder="예: 20250826" /></div>
             </div>
 
-            <!-- Notion-like toolbar -->
             <div class="toolbar" style="margin-top:8px">
               <button class="tbtn" data-cmd="bold"><b>B</b></button>
               <button class="tbtn" data-cmd="italic"><i>I</i></button>
@@ -154,7 +176,6 @@
               <input id="imgPicker" type="file" accept="image/*" class="hidden" />
             </div>
 
-            <!-- Rich editor -->
             <div id="dBodyRich" class="editor" contenteditable="true" data-placeholder="사용자님의 하루를 남겨주세요 :)"></div>
             <textarea id="dBody" class="hidden"></textarea>
 
@@ -255,6 +276,77 @@
       </div>
     </section>
 
+    <!-- EXERCISE -->
+    <section id="page-exercise" class="hidden">
+      <div class="pagehead">
+        <div class="band">
+          <h1>Daily Exercise</h1>
+          <p>추천 운동 + 나의 루틴</p>
+        </div>
+        <div class="pagebody container">
+          <article class="card">
+            <h3 style="margin:0 0 8px;">오늘의 추천</h3>
+            <div id="ex-today" class="exercise-item">
+              <span>불러오는 중…</span>
+              <button id="ex-rand" class="btn light">다시 추천</button>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3 style="margin:0 0 8px;">나의 루틴</h3>
+            <div class="row">
+              <input id="ex-name" placeholder="운동 이름 (예: 스쿼트)" style="flex:1">
+              <input id="ex-set" type="number" min="1" placeholder="세트" style="width:120px">
+              <input id="ex-rep" type="number" min="1" placeholder="횟수/분" style="width:140px">
+              <button id="ex-add" class="btn primary">추가</button>
+            </div>
+            <div id="ex-list" class="container" style="margin-top:10px"></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- PLAYLIST -->
+    <section id="page-playlist" class="hidden">
+      <div class="pagehead">
+        <div class="band">
+          <h1>Daily Playlist</h1>
+          <p>Spotify로 로그인해 플레이리스트를 만들고 바로 재생해요. (재생은 Premium 필요)</p>
+        </div>
+        <div class="pagebody container">
+          <article class="card">
+            <div class="row" style="align-items:center">
+              <span id="sp-status" class="chip">Spotify: 로그아웃</span>
+              <button id="sp-login" class="btn primary">Spotify 로그인</button>
+              <button id="sp-logout" class="btn light">로그아웃</button>
+              <button id="sp-create" class="btn light">Daily Health 플레이리스트 만들기</button>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="row" style="align-items:flex-end">
+              <div style="flex:1">
+                <label>곡 검색</label>
+                <input id="sp-q" placeholder="검색어(예: lofi focus)" />
+              </div>
+              <button id="sp-search" class="btn primary">검색</button>
+            </div>
+            <div id="sp-results" class="container" style="margin-top:10px"></div>
+          </article>
+
+          <article class="card">
+            <h3 style="margin:0 0 8px;">재생 컨트롤</h3>
+            <div class="row">
+              <button id="sp-play" class="btn primary">재생/일시정지</button>
+              <button id="sp-next" class="btn light">다음</button>
+              <button id="sp-prev" class="btn light">이전</button>
+            </div>
+            <div id="sp-now" class="muted" style="margin-top:8px;">현재 상태: -</div>
+          </article>
+        </div>
+      </div>
+    </section>
+
     <!-- Diary view modal -->
     <div id="viewModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="viewTitle">
       <div class="panel">
@@ -270,6 +362,8 @@
     <footer>© Daily Health • Leo</footer>
   </main>
 
+  <!-- Spotify Web Playback SDK -->
+  <script src="https://sdk.scdn.co/spotify-player.js"></script>
   <script src="./app.js" defer></script>
 </body>
 </html>
