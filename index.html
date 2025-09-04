@@ -97,6 +97,24 @@
     .callout>span{font-size:20px}
     hr{border:none;border-top:1px solid #e5e7eb;margin:12px 0}
   </style>
+
+  <!-- ▼▼ 모바일이면 mobile.html로 자동 이동 ▼▼ -->
+  <script>
+    (function () {
+      // 데스크탑 강제보기는 ?desktop=1 로 유지
+      const forceDesktop = new URLSearchParams(location.search).has('desktop');
+      if (forceDesktop) return;
+
+      const isMobileUA = /Mobi|Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+      const isNarrow = Math.min(window.innerWidth, window.innerHeight) <= 820;
+
+      if ((isMobileUA || isNarrow) && !/mobile\.html$/i.test(location.pathname)) {
+        const base = (location.pathname.replace(/[^/]*$/, '') || './');
+        location.replace(base + 'mobile.html');
+      }
+    })();
+  </script>
+  <!-- ▲▲ 모바일 리다이렉트 끝 ▲▲ -->
 </head>
 <body>
   <!-- Top bar -->
@@ -326,16 +344,16 @@
             </div>
           </article>
 
-          <article class="card">
-            <div class="row" style="align-items:flex-end">
-              <div style="flex:1">
-                <label>곡 검색</label>
-                <input id="sp-q" placeholder="검색어(예: lofi focus)" />
+            <article class="card">
+              <div class="row" style="align-items:flex-end">
+                <div style="flex:1">
+                  <label>곡 검색</label>
+                  <input id="sp-q" placeholder="검색어(예: lofi focus)" />
+                </div>
+                <button id="sp-search" class="btn primary">검색</button>
               </div>
-              <button id="sp-search" class="btn primary">검색</button>
-            </div>
-            <div id="sp-results" class="container" style="margin-top:10px"></div>
-          </article>
+              <div id="sp-results" class="container" style="margin-top:10px"></div>
+            </article>
 
           <article class="card">
             <h3 style="margin:0 0 8px;">재생 컨트롤</h3>
