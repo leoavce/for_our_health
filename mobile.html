@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>For_your_Health • Mobile</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+  <style>
+    :root{--sky:#2ea2ff}
+    html,body{height:100%}
+    body{
+      font-family:'Noto Sans KR',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+      background:#f0f4f8;
+      min-height:100dvh;
+    }
+    /* iOS 안전영역 여백 보정 */
+    .safe-b { padding-bottom: max(env(safe-area-inset-bottom), 1rem); }
+  </style>
+</head>
+<body class="bg-gray-100">
+  <div class="container mx-auto max-w-md">
+    <!-- 앱바 -->
+    <header class="bg-gradient-to-r from-sky-500 to-sky-600 text-white px-4 py-3 flex justify-between items-center shadow-md">
+      <h1 class="text-lg font-bold tracking-tight">For_your_Health</h1>
+      <nav class="flex items-center gap-2">
+        <a href="#home" data-nav="home" class="bg-white text-sky-600 px-3 py-1.5 rounded-full text-sm font-semibold shadow-sm">HOME</a>
+      </nav>
+    </header>
+
+    <!-- 본문 -->
+    <main class="p-4 space-y-5">
+      <!-- 히어로 -->
+      <section class="bg-gradient-to-r from-sky-400 to-sky-500 rounded-2xl p-5 text-white shadow-lg">
+        <h2 class="text-2xl font-extrabold">Daily Health, Simply.</h2>
+        <div class="mt-3 flex gap-2">
+          <span class="bg-black/20 px-3 py-1 rounded-full text-sm">사용자: <span id="mUser">guest</span></span>
+          <a href="#home" id="btnSetUserM" class="bg-white text-sky-600 px-3 py-1 rounded-full text-sm font-semibold">사용자명 변경</a>
+        </div>
+      </section>
+
+      <!-- 빠른 탭 -->
+      <section class="bg-white rounded-2xl p-4 shadow">
+        <p class="text-[15px] text-gray-700">오늘은 어떤 하루를 보내고 계신가요? 😊</p>
+        <nav class="mt-3 grid grid-cols-5 gap-2 border-t pt-3">
+          <a href="#diary" data-nav="diary" class="flex flex-col items-center gap-1 py-2 rounded-lg active:scale-[.98]">
+            <span class="material-icons text-3xl text-sky-600">book</span><span class="text-xs font-medium text-sky-700">Diary</span>
+          </a>
+          <a href="#menu" data-nav="menu" class="flex flex-col items-center gap-1 py-2 rounded-lg active:scale-[.98]">
+            <span class="material-icons text-3xl text-gray-500">restaurant_menu</span><span class="text-xs text-gray-600">Menu</span>
+          </a>
+          <a href="#keeper" data-nav="keeper" class="flex flex-col items-center gap-1 py-2 rounded-lg active:scale-[.98]">
+            <span class="material-icons text-3xl text-gray-500">alarm</span><span class="text-xs text-gray-600">Alarm</span>
+          </a>
+          <a href="#exercise" data-nav="exercise" class="flex flex-col items-center gap-1 py-2 rounded-lg active:scale-[.98]">
+            <span class="material-icons text-3xl text-gray-500">fitness_center</span><span class="text-xs text-gray-600">Exercise</span>
+          </a>
+          <a href="#playlist" data-nav="playlist" class="flex flex-col items-center gap-1 py-2 rounded-lg active:scale-[.98]">
+            <span class="material-icons text-3xl text-gray-500">playlist_play</span><span class="text-xs text-gray-600">Playlist</span>
+          </a>
+        </nav>
+      </section>
+
+      <!-- 2열 → 모바일 단일열 카드 -->
+      <section class="space-y-4">
+        <article class="bg-white rounded-2xl p-5 shadow">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="material-icons text-sky-500 text-3xl">timer</span>
+            <h3 class="text-lg font-bold text-gray-900">Daily Exercise</h3>
+          </div>
+          <p class="text-gray-600 mb-4 text-[15px]">오늘의 추천 운동을 확인하고, 나만의 루틴을 만들어봐요!</p>
+          <a href="#exercise" data-nav="exercise" class="w-full inline-flex justify-center bg-sky-100 text-sky-700 font-semibold py-3 rounded-xl hover:bg-sky-200 transition-colors">오늘의 루틴 확인하기</a>
+        </article>
+
+        <article class="bg-white rounded-2xl p-5 shadow">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="material-icons text-sky-500 text-3xl">music_note</span>
+            <h3 class="text-lg font-bold text-gray-900">Daily Playlist</h3>
+          </div>
+          <p class="text-gray-600 mb-4 text-[15px]">Spotify와 함께 집중/힐링하는 시간을 가져봐요.</p>
+          <a href="#playlist" data-nav="playlist" class="w-full inline-flex justify-center bg-sky-100 text-sky-700 font-semibold py-3 rounded-xl hover:bg-sky-200 transition-colors">나만의 플레이리스트 만들기</a>
+        </article>
+      </section>
+
+      <!-- 팁 -->
+      <section class="bg-white rounded-2xl p-5 shadow">
+        <h3 class="text-base font-bold text-gray-900 mb-1.5">Tip</h3>
+        <p class="text-gray-600 text-sm leading-5">
+          알림은 브라우저가 열려 있을 때 동작합니다(GitHub Pages). Windows/Chrome/Edge는 알림센터(토스트)로 표시돼요.
+        </p>
+      </section>
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="text-center safe-b pt-4 pb-3 text-gray-500 text-xs">
+      © Daily Health • Leo
+    </footer>
+  </div>
+
+  <!-- 라우터 연동(있으면 사용, 없으면 해시로 이동) + 사용자명 표시 -->
+  <script>
+    const $ = (s) => document.querySelector(s);
+    // 기존 app.js의 user.name 저장값 사용
+    const saved = localStorage.getItem("user.name") || "guest";
+    const mUser = $("#mUser"); if (mUser) mUser.textContent = saved;
+
+    // 사용자명 변경(모바일)
+    $("#btnSetUserM")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      const v = prompt("사용자 이름을 입력하세요", localStorage.getItem("user.name") || "guest");
+      if (v) {
+        localStorage.setItem("user.name", v.trim());
+        if (mUser) mUser.textContent = v.trim();
+      }
+    });
+
+    // data-nav -> 기존 라우터(go) 사용 또는 해시 이동
+    document.querySelectorAll("[data-nav]").forEach((el) => {
+      el.addEventListener("click", (ev) => {
+        const id = el.getAttribute("data-nav");
+        if (window.go instanceof Function) { ev.preventDefault(); window.go(id); }
+        // go가 없으면 해시로 이동
+      });
+    });
+  </script>
+</body>
+</html>
